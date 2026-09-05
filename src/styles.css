@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: #2E7A76 !important; }
+button { font-family: 'Inter', sans-serif; }
+::-webkit-scrollbar { height: 6px; }
+.tw-cat-chips { display: none; }
+@media (max-width: 860px) {
+  .tw-3col { grid-template-columns: 1fr !important; }
+  .tw-2col { grid-template-columns: 1fr !important; }
+  .tw-checkout-grid { grid-template-columns: 1fr !important; }
+  .tw-hero-grid { grid-template-columns: 1fr !important; }
+  .tw-menu-layout { grid-template-columns: 1fr !important; }
+  .tw-cat-sidebar { display: none !important; }
+  .tw-cat-chips { display: flex !important; }
+  .tw-desktop-nav { display: none !important; }
+  .tw-hide-mobile { display: none !important; }
+  .tw-mobile-only { display: flex !important; }
+}
+@media (min-width: 861px) {
+  .tw-mobile-only { display: none !important; }
+}
