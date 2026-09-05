@@ -1,20 +1,25 @@
 import { useState } from "react";
-import { ShoppingCart, Menu as MenuIcon } from "lucide-react";
+import { ShoppingCart, Menu as MenuIcon, User } from "lucide-react";
 import { T, RESTAURANT } from "../data/site";
 import { SeaIcon, Button, navLinkStyle } from "./ui";
 
 interface HeaderProps {
   goHome: () => void;
   goMenu: () => void;
-  goAdmin: () => void;
+  goOwnerLogin: () => void;
+  goSuperAdminLogin: () => void;
+  goCustomerArea: () => void;
+  isCustomerLoggedIn: boolean;
+  customerName?: string;
   openOrderType: () => void;
   cartCount: number;
   openCart: () => void;
   dark?: boolean;
 }
 
-export default function Header({ goHome, goMenu, goAdmin, openOrderType, cartCount, openCart, dark }: HeaderProps) {
+export default function Header({ goHome, goMenu, goOwnerLogin, goSuperAdminLogin, goCustomerArea, isCustomerLoggedIn, customerName, openOrderType, cartCount, openCart, dark }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const accountLabel = isCustomerLoggedIn ? `Hi, ${customerName?.split(" ")[0] ?? "there"}` : "My Orders";
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 40, background: dark ? "transparent" : T.ink,
@@ -31,11 +36,13 @@ export default function Header({ goHome, goMenu, goAdmin, openOrderType, cartCou
           </div>
         </div>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 26 }} className="tw-desktop-nav">
+        <nav style={{ display: "flex", alignItems: "center", gap: 22 }} className="tw-desktop-nav">
           <button onClick={goHome} style={navLinkStyle}>Home</button>
           <button onClick={goMenu} style={navLinkStyle}>Menu</button>
           <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call</a>
-          <button onClick={goAdmin} style={navLinkStyle}>Owner Login</button>
+          <button onClick={goCustomerArea} style={{ ...navLinkStyle, display: "flex", alignItems: "center", gap: 5 }}><User size={14} /> {accountLabel}</button>
+          <button onClick={goOwnerLogin} style={navLinkStyle}>Owner Login</button>
+          <button onClick={goSuperAdminLogin} style={navLinkStyle}>Admin</button>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -58,7 +65,9 @@ export default function Header({ goHome, goMenu, goAdmin, openOrderType, cartCou
           <button onClick={() => { goHome(); setMobileOpen(false); }} style={navLinkStyle}>Home</button>
           <button onClick={() => { goMenu(); setMobileOpen(false); }} style={navLinkStyle}>Menu</button>
           <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call {RESTAURANT.phone}</a>
-          <button onClick={() => { goAdmin(); setMobileOpen(false); }} style={navLinkStyle}>Owner Login</button>
+          <button onClick={() => { goCustomerArea(); setMobileOpen(false); }} style={navLinkStyle}>{accountLabel}</button>
+          <button onClick={() => { goOwnerLogin(); setMobileOpen(false); }} style={navLinkStyle}>Owner Login</button>
+          <button onClick={() => { goSuperAdminLogin(); setMobileOpen(false); }} style={navLinkStyle}>Admin</button>
           <Button variant="primary" size="sm" onClick={() => { openOrderType(); setMobileOpen(false); }}>Order Now</Button>
         </div>
       )}

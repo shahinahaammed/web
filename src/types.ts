@@ -7,7 +7,10 @@ export type View =
   | "cart"
   | "checkout"
   | "confirmation"
-  | "admin";
+  | "admin"
+  | "customerAuth"
+  | "customerOrders"
+  | "superAdmin";
 
 export type OrderStatus =
   | "New"
@@ -67,6 +70,13 @@ export interface CheckoutForm {
   instructions: string;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  password: string;
+}
+
 export interface Order {
   orderNumber: string;
   orderType: OrderType;
@@ -77,4 +87,5 @@ export interface Order {
   total: number;
   status: OrderStatus;
   createdAt: number;
+  customerId?: string;
 }

@@ -14,6 +14,12 @@ import ConfirmationPage from "./pages/ConfirmationPage";
 import AdminLogin from "./admin/AdminLogin";
 import AdminPage from "./admin/AdminPage";
 
+import CustomerAuth from "./customer/CustomerAuth";
+import CustomerOrders from "./customer/CustomerOrders";
+
+import SuperAdminLogin from "./superadmin/SuperAdminLogin";
+import SuperAdminPage from "./superadmin/SuperAdminPage";
+
 import "./styles.css";
 
 import type {
@@ -24,28 +30,27 @@ import type {
   Order,
   OrderStatus,
   CheckoutForm,
+  Customer,
 } from "./types";
 
 export default function App() {
-const [view, setView] = useState<View>("home");
+  const [view, setView] = useState<View>("home");
 
-const [orderType, setOrderType] =
-  useState<OrderType | null>(null);
+  const [orderType, setOrderType] = useState<OrderType | null>(null);
+  const [cart, setCart] = useState<Record<string, CartItem>>({});
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(SEED_MENU);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
-const [cart, setCart] =
-  useState<Record<string, CartItem>>({});
+  // Owner (restaurant staff) dashboard auth — menu + orders only
+  const [isOwner, setIsOwner] = useState(false);
 
-const [menuItems, setMenuItems] =
-  useState<MenuItem[]>(SEED_MENU);
+  // Full-access admin auth — orders + menu + customer accounts
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-const [orders, setOrders] =
-  useState<Order[]>([]);
-
-const [lastOrder, setLastOrder] =
-  useState<Order | null>(null);
-
-const [isAdmin, setIsAdmin] =
-  useState<boolean>(false);
+  // Customer accounts
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [currentCustomerId, setCurrentCustomerId] = useState<string | null>(null);
 
   // --------------------------------------------------
   // LOAD DATA
@@ -54,111 +59,98 @@ const [isAdmin, setIsAdmin] =
   useEffect(() => {
     try {
       const rawMenu = localStorage.getItem("tw-menu-items");
-
-      if (rawMenu) {
-        setMenuItems(JSON.parse(rawMenu));
-      } else {
-        localStorage.setItem(
-          "tw-menu-items",
-          JSON.stringify(SEED_MENU)
-        );
-      }
+      if (rawMenu) setMenuItems(JSON.parse(rawMenu));
+      else localStorage.setItem("tw-menu-items", JSON.stringify(SEED_MENU));
     } catch (error) {
       console.error("Failed to load menu:", error);
     }
 
     try {
       const rawOrders = localStorage.getItem("tw-orders");
-
-      if (rawOrders) {
-        setOrders(JSON.parse(rawOrders));
-      }
+      if (rawOrders) setOrders(JSON.parse(rawOrders));
     } catch (error) {
       console.error("Failed to load orders:", error);
+    }
+
+    try {
+      const rawCustomers = localStorage.getItem("tw-customers");
+      if (rawCustomers) setCustomers(JSON.parse(rawCustomers));
+    } catch (error) {
+      console.error("Failed to load customers:", error);
+    }
+
+    try {
+      const session = localStorage.getItem("tw-customer-session");
+      if (session) setCurrentCustomerId(session);
+    } catch (error) {
+      console.error("Failed to load customer session:", error);
     }
   }, []);
 
   // --------------------------------------------------
-  // SAVE MENU
+  // SAVE MENU / ORDERS / CUSTOMERS
   // --------------------------------------------------
 
-const saveMenu = useCallback(
-  (next: MenuItem[]) => {
+  const saveMenu = useCallback((next: MenuItem[]) => {
     setMenuItems(next);
-
     try {
-      localStorage.setItem(
-        "tw-menu-items",
-        JSON.stringify(next)
-      );
+      localStorage.setItem("tw-menu-items", JSON.stringify(next));
     } catch (error) {
       console.error("Failed to save menu:", error);
     }
-  },
-  []
-);
+  }, []);
 
-  // --------------------------------------------------
-  // SAVE ORDERS
-  // --------------------------------------------------
-
-const saveOrders = useCallback(
-  (next: Order[]) => {
+  const saveOrders = useCallback((next: Order[]) => {
     setOrders(next);
-
     try {
-      localStorage.setItem(
-        "tw-orders",
-        JSON.stringify(next)
-      );
+      localStorage.setItem("tw-orders", JSON.stringify(next));
     } catch (error) {
       console.error("Failed to save orders:", error);
     }
-  },
-  []
-);
+  }, []);
+
+  const saveCustomers = useCallback((next: Customer[]) => {
+    setCustomers(next);
+    try {
+      localStorage.setItem("tw-customers", JSON.stringify(next));
+    } catch (error) {
+      console.error("Failed to save customers:", error);
+    }
+  }, []);
 
   // --------------------------------------------------
   // NAVIGATION
   // --------------------------------------------------
 
-  const goHome = () => {
-    setView("home");
-  };
+  const goHome = () => setView("home");
+  const goMenu = () => setView("menu");
+  const goCart = () => setView("cart");
+  const goCheckout = () => setView("checkout");
 
-  const goMenu = () => {
-    setView("menu");
-  };
+  const goOwnerLogin = () => setView("admin");
+  const goSuperAdminLogin = () => setView("superAdmin");
 
-  const goAdmin = () => {
-    setView("admin");
-  };
-
-  const goCart = () => {
-    setView("cart");
-  };
-
-  const goCheckout = () => {
-    setView("checkout");
+  const goCustomerArea = () => {
+    setView(currentCustomerId ? "customerOrders" : "customerAuth");
   };
 
   // --------------------------------------------------
   // ORDER TYPE
   // --------------------------------------------------
 
-const startOrder = (type?: OrderType) => {
-  if (type) {
+  const startOrder = (type?: OrderType) => {
+    if (type) {
+      setOrderType(type);
+      setView("menu");
+    } else {
+      setView("orderType");
+    }
+  };
+
+  const pickOrderType = (type: OrderType) => {
     setOrderType(type);
     setView("menu");
-  } else {
-    setView("orderType");
-  }
-};
-
-const pickOrderType = (type: OrderType) => {
-  setOrderType(type);
-  setView("menu");
-};
+  };
 
   const changeOrderType = () => {
     setView("orderType");
@@ -171,7 +163,6 @@ const pickOrderType = (type: OrderType) => {
   const addToCart = (item: MenuItem) => {
     setCart((current) => ({
       ...current,
-
       [item.id]: {
         ...item,
         qty: (current[item.id]?.qty ?? 0) + 1,
@@ -182,55 +173,28 @@ const pickOrderType = (type: OrderType) => {
   const incItem = (id: string) => {
     setCart((current) => {
       const item = current[id];
-
-      if (!item) {
-        return current;
-      }
-
-      return {
-        ...current,
-
-        [id]: {
-          ...item,
-          qty: item.qty + 1,
-        },
-      };
+      if (!item) return current;
+      return { ...current, [id]: { ...item, qty: item.qty + 1 } };
     });
   };
 
   const decItem = (id: string) => {
     setCart((current) => {
       const item = current[id];
-
-      if (!item) {
-        return current;
-      }
-
+      if (!item) return current;
       if (item.qty <= 1) {
         const next = { ...current };
-
         delete next[id];
-
         return next;
       }
-
-      return {
-        ...current,
-
-        [id]: {
-          ...item,
-          qty: item.qty - 1,
-        },
-      };
+      return { ...current, [id]: { ...item, qty: item.qty - 1 } };
     });
   };
 
   const removeItem = (id: string) => {
     setCart((current) => {
       const next = { ...current };
-
       delete next[id];
-
       return next;
     });
   };
@@ -240,22 +204,9 @@ const pickOrderType = (type: OrderType) => {
   // --------------------------------------------------
 
   const cartItems = Object.values(cart);
-
-  const cartCount = cartItems.reduce(
-    (sum, item) => sum + item.qty,
-    0
-  );
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.qty * item.price,
-    0
-  );
-
-  const deliveryFee =
-    orderType === "delivery" && cartCount > 0
-      ? DELIVERY_FEE
-      : 0;
-
+  const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.qty * item.price, 0);
+  const deliveryFee = orderType === "delivery" && cartCount > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
 
   // --------------------------------------------------
@@ -263,12 +214,9 @@ const pickOrderType = (type: OrderType) => {
   // --------------------------------------------------
 
   const placeOrder = (form: CheckoutForm) => {
-    if (!orderType) {
-      return;
-    }
+    if (!orderType) return;
 
-    const orderNumber =
-      "TW-" + Date.now().toString().slice(-6);
+    const orderNumber = "TW-" + Date.now().toString().slice(-6);
 
     const order: Order = {
       orderNumber,
@@ -280,14 +228,12 @@ const pickOrderType = (type: OrderType) => {
       total,
       status: "New",
       createdAt: Date.now(),
+      customerId: currentCustomerId ?? undefined,
     };
 
     saveOrders([order, ...orders]);
-
     setLastOrder(order);
-
     setCart({});
-
     setView("confirmation");
   };
 
@@ -295,21 +241,46 @@ const pickOrderType = (type: OrderType) => {
   // UPDATE ORDER STATUS
   // --------------------------------------------------
 
-  const updateStatus = (
-    orderNumber: string,
-    status: OrderStatus
-  ) => {
+  const updateStatus = (orderNumber: string, status: OrderStatus) => {
     const nextOrders = orders.map((order) =>
-      order.orderNumber === orderNumber
-        ? {
-            ...order,
-            status,
-          }
-        : order
+      order.orderNumber === orderNumber ? { ...order, status } : order
     );
-
     saveOrders(nextOrders);
   };
+
+  // --------------------------------------------------
+  // CUSTOMER AUTH
+  // --------------------------------------------------
+
+  const handleCustomerSignup = (data: Omit<Customer, "id">): { ok: boolean; error?: string } => {
+    const exists = customers.some((c) => c.phone === data.phone);
+    if (exists) return { ok: false, error: "An account with this phone number already exists." };
+
+    const customer: Customer = { ...data, id: "c" + Date.now() };
+    saveCustomers([...customers, customer]);
+    setCurrentCustomerId(customer.id);
+    try { localStorage.setItem("tw-customer-session", customer.id); } catch { /* ignore */ }
+    setView("customerOrders");
+    return { ok: true };
+  };
+
+  const handleCustomerLogin = (phone: string, password: string): { ok: boolean; error?: string } => {
+    const customer = customers.find((c) => c.phone === phone && c.password === password);
+    if (!customer) return { ok: false, error: "Incorrect phone number or password." };
+
+    setCurrentCustomerId(customer.id);
+    try { localStorage.setItem("tw-customer-session", customer.id); } catch { /* ignore */ }
+    setView("customerOrders");
+    return { ok: true };
+  };
+
+  const handleCustomerLogout = () => {
+    setCurrentCustomerId(null);
+    try { localStorage.removeItem("tw-customer-session"); } catch { /* ignore */ }
+    goHome();
+  };
+
+  const currentCustomer = customers.find((c) => c.id === currentCustomerId) ?? null;
 
   // --------------------------------------------------
   // ORDER STEPS
@@ -329,6 +300,8 @@ const pickOrderType = (type: OrderType) => {
   // RENDER
   // --------------------------------------------------
 
+  const showChrome = view !== "admin" && view !== "superAdmin";
+
   return (
     <div
       style={{
@@ -338,29 +311,28 @@ const pickOrderType = (type: OrderType) => {
         minHeight: "100vh",
       }}
     >
-      <Header
-        goHome={goHome}
-        goMenu={goMenu}
-        goAdmin={goAdmin}
-        openOrderType={() => startOrder()}
-        cartCount={cartCount}
-        openCart={goCart}
-        dark={view === "home"}
-      />
-
-      {view === "home" && (
-        <HomePage
-          startOrder={startOrder}
+      {showChrome && (
+        <Header
+          goHome={goHome}
           goMenu={goMenu}
-          menuItems={menuItems}
+          goOwnerLogin={goOwnerLogin}
+          goSuperAdminLogin={goSuperAdminLogin}
+          goCustomerArea={goCustomerArea}
+          isCustomerLoggedIn={!!currentCustomer}
+          customerName={currentCustomer?.name}
+          openOrderType={() => startOrder()}
+          cartCount={cartCount}
+          openCart={goCart}
+          dark={view === "home"}
         />
       )}
 
+      {view === "home" && (
+        <HomePage startOrder={startOrder} goMenu={goMenu} menuItems={menuItems} />
+      )}
+
       {view === "orderType" && (
-        <OrderTypePicker
-          onPick={pickOrderType}
-          onBack={goHome}
-        />
+        <OrderTypePicker onPick={pickOrderType} onBack={goHome} />
       )}
 
       {view === "menu" && (
@@ -416,32 +388,61 @@ const pickOrderType = (type: OrderType) => {
         />
       )}
 
+      {/* Customer account area */}
+      {view === "customerAuth" && (
+        <CustomerAuth
+          customers={customers}
+          onSignup={handleCustomerSignup}
+          onLogin={handleCustomerLogin}
+          onBack={goHome}
+        />
+      )}
+
+      {view === "customerOrders" && currentCustomer && (
+        <CustomerOrders
+          customer={currentCustomer}
+          orders={orders}
+          onBack={goHome}
+          onLogout={handleCustomerLogout}
+        />
+      )}
+
+      {/* Owner dashboard — menu + orders */}
       {view === "admin" &&
-        (isAdmin ? (
+        (isOwner ? (
           <AdminPage
             menuItems={menuItems}
             saveMenu={saveMenu}
             orders={orders}
             updateStatus={updateStatus}
             onLogout={() => {
-              setIsAdmin(false);
+              setIsOwner(false);
               goHome();
             }}
           />
         ) : (
-          <AdminLogin
-            onLogin={() => setIsAdmin(true)}
-            goHome={goHome}
-          />
+          <AdminLogin onLogin={() => setIsOwner(true)} goHome={goHome} />
         ))}
 
-      {view !== "admin" && (
-        <Footer
-          goMenu={goMenu}
-          goHome={goHome}
-          goAdmin={goAdmin}
-        />
-      )}
+      {/* Full-access admin — menu + orders + customers */}
+      {view === "superAdmin" &&
+        (isSuperAdmin ? (
+          <SuperAdminPage
+            menuItems={menuItems}
+            saveMenu={saveMenu}
+            orders={orders}
+            updateStatus={updateStatus}
+            customers={customers}
+            onLogout={() => {
+              setIsSuperAdmin(false);
+              goHome();
+            }}
+          />
+        ) : (
+          <SuperAdminLogin onLogin={() => setIsSuperAdmin(true)} goHome={goHome} />
+        ))}
+
+      {showChrome && <Footer goMenu={goMenu} goHome={goHome} goAdmin={goOwnerLogin} />}
     </div>
   );
 }

@@ -98,6 +98,7 @@ export const RESTAURANT = {
 
 export const DELIVERY_FEE = 15;
 export const ADMIN_PASSWORD = "tidewater2026";
+export const SUPER_ADMIN_PASSWORD = "tidewater-admin-2026";
 export const STATUS_FLOW: OrderStatus[] = ["New", "Pending", "Preparing", "Ready", "Completed", "Cancelled"];
 export const STATUS_COLOR: Record<OrderStatus, string> = {
   New: T.coral, Pending: T.brass, Preparing: "#3E7CB1",
