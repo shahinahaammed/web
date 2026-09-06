@@ -4,15 +4,15 @@ import { T } from "../data/site";
 import { Field, Button, inputStyle, navLinkStyle } from "../components/ui";
 
 interface CustomerAuthProps {
-  onSignup: (name: string, phone: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  onLogin: (phone: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  onSignup: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  onLogin: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   onBack: () => void;
 }
 
 export default function CustomerAuth({ onSignup, onLogin, onBack }: CustomerAuthProps) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -20,9 +20,9 @@ export default function CustomerAuth({ onSignup, onLogin, onBack }: CustomerAuth
   const submit = async () => {
     setError("");
     if (mode === "signup" && !name.trim()) return setError("Enter your full name.");
-    if (!phone.trim() || !password.trim()) return setError("Enter your phone number and password.");
+    if (!email.trim() || !password.trim()) return setError("Enter your email address and password.");
     setBusy(true);
-    const res = mode === "signup" ? await onSignup(name.trim(), phone.trim(), password) : await onLogin(phone.trim(), password);
+    const res = mode === "signup" ? await onSignup(name.trim(), email.trim(), password) : await onLogin(email.trim(), password);
     setBusy(false);
     if (!res.ok) setError(res.error || "Authentication failed.");
   };
@@ -35,7 +35,7 @@ export default function CustomerAuth({ onSignup, onLogin, onBack }: CustomerAuth
         <h2 style={{ fontFamily: "Fraunces, serif", fontSize: 22, fontWeight: 600, color: T.ink, marginBottom: 6 }}>{mode === "login" ? "Customer login" : "Create your account"}</h2>
         <p style={{ color: T.ink60, fontSize: 13.5, marginBottom: 20 }}>{mode === "login" ? "Log in to see your order history." : "Create an account to track your orders."}</p>
         {mode === "signup" && <Field label="Full name"><input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" /></Field>}
-        <Field label="Phone number"><input style={inputStyle} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 050 123 4567" /></Field>
+        <Field label="Email address"><input type="email" style={inputStyle} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" /></Field>
         <Field label="Password" error={error}><input type="password" style={inputStyle} value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} onKeyDown={(e) => e.key === "Enter" && void submit()} placeholder="Enter your password" /></Field>
         <Button variant="dark" full onClick={() => void submit()}>{busy ? "Please wait…" : mode === "login" ? "Log In" : "Create Account"}</Button>
         <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }} style={{ ...navLinkStyle, color: T.tide, width: "100%", textAlign: "center", marginTop: 16, fontSize: 13.5 }}>{mode === "login" ? "New here? Create an account" : "Already have an account? Log in"}</button>

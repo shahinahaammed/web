@@ -1,13 +1,6 @@
 import { supabase } from "./supabase";
 import type { Customer, MenuItem, Order, OrderStatus, OrderType, CheckoutForm, CartItem } from "../types";
 
-function normalizePhone(value: string) {
-  const cleaned = value.trim().replace(/[\s()-]/g, "");
-  if (cleaned.startsWith("00")) return "+" + cleaned.slice(2);
-  if (cleaned.startsWith("0")) return "+971" + cleaned.slice(1);
-  return cleaned.startsWith("+") ? cleaned : "+" + cleaned;
-}
-
 const mapMenu = (row: any): MenuItem => ({
   id: row.id,
   category: row.category,
@@ -43,20 +36,26 @@ export async function getProfile(userId: string): Promise<Customer & { role: "cu
   return { id: data.id, name: data.full_name, phone: data.phone ?? "", role: data.role };
 }
 
-export async function customerSignup(name: string, phone: string, password: string) {
+export async function customerSignup(name: string, email: string, password: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   const { data, error } = await supabase.auth.signUp({
-    phone: normalizePhone(phone),
+    email: normalizedEmail,
     password,
-    options: { data: { full_name: name, phone } },
+    options: { data: { full_name: name, email: normalizedEmail } },
   });
   if (error) throw error;
   if (!data.user) throw new Error("Could not create your account.");
-  if (!data.session) throw new Error("Account created. Please verify your phone number, then log in.");
+  if (!data.session) {
+    throw new Error("Account created. Please check your email to verify your account, then log in.");
+  }
   return getProfile(data.user.id);
 }
 
-export async function customerLogin(phone: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({ phone: normalizePhone(phone), password });
+export async function customerLogin(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password,
+  });
   if (error) throw error;
   if (!data.user) throw new Error("Could not sign in.");
   const profile = await getProfile(data.user.id);

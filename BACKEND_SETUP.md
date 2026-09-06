@@ -26,9 +26,7 @@ The schema creates:
 
 ## 3. Enable authentication
 
-For customer login, enable **Phone** authentication in Supabase Auth.
-
-The app uses phone + password for customers. If phone verification is enabled, add an SMS provider and add OTP verification to the UI before production.
+For customer login, enable **Email** authentication in Supabase Auth. The customer flow uses email + password and does not require Phone authentication or SMS.
 
 For the admin, use **Email + Password** authentication.
 
@@ -51,8 +49,8 @@ Do not put the admin password in the React/Vite source code.
 Create `.env.local`:
 
 ```env
-SUPABASE_URL=https://drflxfjchqjprutrkpfp.supabase.co
-SUPABASE_ANON_KEY=sb_publishable_BR5hsbChi6qFQl0j_LsrlA_A8bLYPGd
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
 Use the project's browser-safe publishable/anon key only. **Never put the Supabase service-role key in Vite or the browser.**
@@ -70,8 +68,8 @@ Add these same variables in:
 
 **Vercel → Project → Settings → Environment Variables**
 
-- `https://drflxfjchqjprutrkpfp.supabase.co`
-- `sb_publishable_BR5hsbChi6qFQl0j_LsrlA_A8bLYPGd`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
 Then redeploy.
 
@@ -81,7 +79,7 @@ Then redeploy.
 Login
  ├── Customer Login
  │    ├── Create account
- │    └── Phone + password
+ │    └── Email + password
  │
  └── Admin Login
       └── Email + password

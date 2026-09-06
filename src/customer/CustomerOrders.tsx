@@ -1,4 +1,4 @@
-import { ArrowLeft, LogOut, Package, RefreshCw } from "lucide-react";
+import { ArrowLeft, LogOut, Package } from "lucide-react";
 import { T, STATUS_COLOR } from "../data/site";
 import { Pill, Button, Row } from "../components/ui";
 import { money, orderTypeLabel } from "../utils/helpers";
@@ -9,10 +9,9 @@ interface CustomerOrdersProps {
   orders: Order[];
   onBack: () => void;
   onLogout: () => void;
-  onRefresh: () => void | Promise<void>;
 }
 
-export default function CustomerOrders({ customer, orders, onBack, onLogout, onRefresh }: CustomerOrdersProps) {
+export default function CustomerOrders({ customer, orders, onBack, onLogout }: CustomerOrdersProps) {
   const myOrders = orders.filter((o) => o.customerId === customer.id).sort((a, b) => b.createdAt - a.createdAt);
 
   return (
@@ -27,10 +26,7 @@ export default function CustomerOrders({ customer, orders, onBack, onLogout, onR
             <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(24px,3vw,32px)", fontWeight: 600, color: T.ink, marginBottom: 6 }}>My Orders</h1>
             <p style={{ color: T.ink60, fontSize: 14 }}>Signed in as {customer.name} · {customer.phone}</p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <Button variant="ghost" size="sm" onClick={() => void onRefresh()}><RefreshCw size={14} /> Refresh</Button>
-            <Button variant="outline" size="sm" onClick={onLogout}><LogOut size={14} /> Log out</Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={onLogout}><LogOut size={14} /> Log out</Button>
         </div>
 
         {myOrders.length === 0 ? (

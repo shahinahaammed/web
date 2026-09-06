@@ -59,15 +59,7 @@ export default function App() {
   const refreshBackendData = useCallback(async (withOrders = false) => {
     const menu = await loadMenu();
     setMenuItems(menu.length ? menu : SEED_MENU);
-    if (withOrders) {
-      try {
-        const freshOrders = await loadOrders();
-        setOrders(freshOrders);
-      } catch (error) {
-        console.error("Failed to load orders:", error);
-        setAuthError(error instanceof Error ? `Could not load orders: ${error.message}` : "Could not load orders.");
-      }
-    }
+    if (withOrders) setOrders(await loadOrders());
   }, []);
 
   useEffect(() => {
@@ -79,6 +71,7 @@ export default function App() {
           const profile = await getProfile(session.user.id);
           setCurrentProfile(profile);
           setCurrentCustomerId(profile.role === "customer" ? profile.id : null);
+          setView(profile.role === "admin" ? "admin" : "customerOrders");
           await refreshBackendData(true);
         } else {
           await refreshBackendData(false);
@@ -114,16 +107,7 @@ export default function App() {
     catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
   }, []);
 
-  const refreshOrders = useCallback(async () => {
-    try {
-      const freshOrders = await loadOrders();
-      setOrders(freshOrders);
-      setAuthError("");
-    } catch (error) {
-      console.error("Failed to refresh orders:", error);
-      setAuthError(error instanceof Error ? `Could not load orders: ${error.message}` : "Could not load orders.");
-    }
-  }, []);
+  const saveOrders = useCallback((next: Order[]) => setOrders(next), []);
 
   // --------------------------------------------------
   // NAVIGATION
@@ -261,10 +245,10 @@ export default function App() {
   // CUSTOMER / ADMIN AUTH
   // --------------------------------------------------
 
-  const handleCustomerSignup = async (name: string, phone: string, password: string) => {
+  const handleCustomerSignup = async (name: string, email: string, password: string) => {
     try {
       setAuthError("");
-      const profile = await customerSignup(name, phone, password);
+      const profile = await customerSignup(name, email, password);
       setCurrentProfile(profile);
       setOrders(await loadOrders());
       setCurrentCustomerId(profile.id);
@@ -277,17 +261,17 @@ export default function App() {
     }
   };
 
-  const handleCustomerLogin = async (phone: string, password: string) => {
+  const handleCustomerLogin = async (email: string, password: string) => {
     try {
       setAuthError("");
-      const profile = await customerLogin(phone, password);
+      const profile = await customerLogin(email, password);
       setCurrentProfile(profile);
       setOrders(await loadOrders());
       setCurrentCustomerId(profile.id);
       setView("customerOrders");
       return { ok: true };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Incorrect phone number or password.";
+      const message = error instanceof Error ? error.message : "Incorrect email or password.";
       setAuthError(message);
       return { ok: false, error: message };
     }
@@ -445,7 +429,6 @@ export default function App() {
           orders={orders}
           onBack={goHome}
           onLogout={handleCustomerLogout}
-          onRefresh={refreshOrders}
         />
       )}
 
@@ -459,7 +442,6 @@ export default function App() {
           updateStatus={updateStatus}
           customers={customers}
           onLogout={handleLogout}
-          onRefresh={refreshOrders}
         />
       ) : (
         <AdminLogin onLogin={handleAdminLogin} goHome={goHome} />
