@@ -107,8 +107,6 @@ export default function App() {
     catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
   }, []);
 
-  const saveOrders = useCallback((next: Order[]) => setOrders(next), []);
-
   // --------------------------------------------------
   // NAVIGATION
   // --------------------------------------------------
