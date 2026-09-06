@@ -51,8 +51,8 @@ Do not put the admin password in the React/Vite source code.
 Create `.env.local`:
 
 ```env
-VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SUPABASE_URL=https://drflxfjchqjprutrkpfp.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_BR5hsbChi6qFQl0j_LsrlA_A8bLYPGd
 ```
 
 Use the project's browser-safe publishable/anon key only. **Never put the Supabase service-role key in Vite or the browser.**
@@ -70,8 +70,8 @@ Add these same variables in:
 
 **Vercel → Project → Settings → Environment Variables**
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `https://drflxfjchqjprutrkpfp.supabase.co`
+- `sb_publishable_BR5hsbChi6qFQl0j_LsrlA_A8bLYPGd`
 
 Then redeploy.
 
