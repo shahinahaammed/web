@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { T, SEED_MENU, DELIVERY_FEE } from "./data/site";
+import { supabase } from "./lib/supabase";
+import { adminLogin, createOrder, customerLogin, customerSignup, deleteMenuItem, getProfile, getSession, loadCustomers, loadMenu, loadOrders, logout, updateOrderStatus, upsertMenu } from "./lib/backend";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -10,14 +12,13 @@ import MenuPage from "./pages/MenuPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
+import LoginPage from "./pages/LoginPage";
 
 import AdminLogin from "./admin/AdminLogin";
-import AdminPage from "./admin/AdminPage";
 
 import CustomerAuth from "./customer/CustomerAuth";
 import CustomerOrders from "./customer/CustomerOrders";
 
-import SuperAdminLogin from "./superadmin/SuperAdminLogin";
 import SuperAdminPage from "./superadmin/SuperAdminPage";
 
 import "./styles.css";
@@ -42,81 +43,71 @@ export default function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
-  // Owner (restaurant staff) dashboard auth — menu + orders only
-  const [isOwner, setIsOwner] = useState(false);
+  // Authentication is handled by Supabase Auth.
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [currentProfile, setCurrentProfile] = useState<(Customer & { role: "customer" | "admin" }) | null>(null);
 
-  // Full-access admin auth — orders + menu + customer accounts
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-
-  // Customer accounts
+  // Backend data
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [currentCustomerId, setCurrentCustomerId] = useState<string | null>(null);
 
   // --------------------------------------------------
-  // LOAD DATA
+  // LOAD DATA + AUTH SESSION
   // --------------------------------------------------
+
+  const refreshBackendData = useCallback(async (withOrders = false) => {
+    const menu = await loadMenu();
+    setMenuItems(menu.length ? menu : SEED_MENU);
+    if (withOrders) setOrders(await loadOrders());
+  }, []);
 
   useEffect(() => {
-    try {
-      const rawMenu = localStorage.getItem("tw-menu-items");
-      if (rawMenu) setMenuItems(JSON.parse(rawMenu));
-      else localStorage.setItem("tw-menu-items", JSON.stringify(SEED_MENU));
-    } catch (error) {
-      console.error("Failed to load menu:", error);
-    }
+    let mounted = true;
+    (async () => {
+      try {
+        const session = await getSession();
+        if (session?.user && mounted) {
+          const profile = await getProfile(session.user.id);
+          setCurrentProfile(profile);
+          setCurrentCustomerId(profile.role === "customer" ? profile.id : null);
+          setView(profile.role === "admin" ? "admin" : "customerOrders");
+          await refreshBackendData(true);
+        } else {
+          await refreshBackendData(false);
+        }
+      } catch (error) {
+        console.error("Backend initialization failed:", error);
+        setAuthError(error instanceof Error ? error.message : "Could not connect to the backend.");
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    })();
 
-    try {
-      const rawOrders = localStorage.getItem("tw-orders");
-      if (rawOrders) setOrders(JSON.parse(rawOrders));
-    } catch (error) {
-      console.error("Failed to load orders:", error);
-    }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) {
+        setCurrentProfile(null);
+        setCurrentCustomerId(null);
+        return;
+      }
+      try {
+        const profile = await getProfile(session.user.id);
+        setCurrentProfile(profile);
+        setCurrentCustomerId(profile.role === "customer" ? profile.id : null);
+      } catch (error) {
+        console.error("Could not load profile:", error);
+      }
+    });
 
-    try {
-      const rawCustomers = localStorage.getItem("tw-customers");
-      if (rawCustomers) setCustomers(JSON.parse(rawCustomers));
-    } catch (error) {
-      console.error("Failed to load customers:", error);
-    }
+    return () => { mounted = false; subscription.unsubscribe(); };
+  }, [refreshBackendData]);
 
-    try {
-      const session = localStorage.getItem("tw-customer-session");
-      if (session) setCurrentCustomerId(session);
-    } catch (error) {
-      console.error("Failed to load customer session:", error);
-    }
+  const saveMenu = useCallback(async (next: MenuItem[]) => {
+    try { setMenuItems(await upsertMenu(next)); }
+    catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
   }, []);
 
-  // --------------------------------------------------
-  // SAVE MENU / ORDERS / CUSTOMERS
-  // --------------------------------------------------
-
-  const saveMenu = useCallback((next: MenuItem[]) => {
-    setMenuItems(next);
-    try {
-      localStorage.setItem("tw-menu-items", JSON.stringify(next));
-    } catch (error) {
-      console.error("Failed to save menu:", error);
-    }
-  }, []);
-
-  const saveOrders = useCallback((next: Order[]) => {
-    setOrders(next);
-    try {
-      localStorage.setItem("tw-orders", JSON.stringify(next));
-    } catch (error) {
-      console.error("Failed to save orders:", error);
-    }
-  }, []);
-
-  const saveCustomers = useCallback((next: Customer[]) => {
-    setCustomers(next);
-    try {
-      localStorage.setItem("tw-customers", JSON.stringify(next));
-    } catch (error) {
-      console.error("Failed to save customers:", error);
-    }
-  }, []);
+  const saveOrders = useCallback((next: Order[]) => setOrders(next), []);
 
   // --------------------------------------------------
   // NAVIGATION
@@ -127,8 +118,11 @@ export default function App() {
   const goCart = () => setView("cart");
   const goCheckout = () => setView("checkout");
 
-  const goOwnerLogin = () => setView("admin");
-  const goSuperAdminLogin = () => setView("superAdmin");
+  const goLogin = () => setView("login");
+  const selectLoginRole = (role: "customer" | "admin") => {
+    setAuthError("");
+    setView(role === "customer" ? "customerAuth" : "admin");
+  };
 
   const goCustomerArea = () => {
     setView(currentCustomerId ? "customerOrders" : "customerAuth");
@@ -213,74 +207,103 @@ export default function App() {
   // PLACE ORDER
   // --------------------------------------------------
 
-  const placeOrder = (form: CheckoutForm) => {
-    if (!orderType) return;
+  const placeOrder = async (form: CheckoutForm) => {
+    if (!orderType || !currentCustomerId) {
+      setAuthError("Please log in as a customer before placing an order.");
+      setView("customerAuth");
+      return;
+    }
 
     const orderNumber = "TW-" + Date.now().toString().slice(-6);
+    const order: Order = { orderNumber, orderType, form, items: Object.values(cart), subtotal, deliveryFee, total, status: "New", createdAt: Date.now(), customerId: currentCustomerId };
 
-    const order: Order = {
-      orderNumber,
-      orderType,
-      form,
-      items: Object.values(cart),
-      subtotal,
-      deliveryFee,
-      total,
-      status: "New",
-      createdAt: Date.now(),
-      customerId: currentCustomerId ?? undefined,
-    };
-
-    saveOrders([order, ...orders]);
-    setLastOrder(order);
-    setCart({});
-    setView("confirmation");
+    try {
+      await createOrder(order);
+      setOrders([order, ...orders]);
+      setLastOrder(order);
+      setCart({});
+      setView("confirmation");
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Could not place your order.");
+    }
   };
 
   // --------------------------------------------------
   // UPDATE ORDER STATUS
   // --------------------------------------------------
 
-  const updateStatus = (orderNumber: string, status: OrderStatus) => {
-    const nextOrders = orders.map((order) =>
-      order.orderNumber === orderNumber ? { ...order, status } : order
-    );
-    saveOrders(nextOrders);
+  const updateStatus = async (orderNumber: string, status: OrderStatus) => {
+    try {
+      await updateOrderStatus(orderNumber, status);
+      setOrders((current) => current.map((order) => order.orderNumber === orderNumber ? { ...order, status } : order));
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Could not update the order.");
+    }
   };
 
   // --------------------------------------------------
-  // CUSTOMER AUTH
+  // CUSTOMER / ADMIN AUTH
   // --------------------------------------------------
 
-  const handleCustomerSignup = (data: Omit<Customer, "id">): { ok: boolean; error?: string } => {
-    const exists = customers.some((c) => c.phone === data.phone);
-    if (exists) return { ok: false, error: "An account with this phone number already exists." };
-
-    const customer: Customer = { ...data, id: "c" + Date.now() };
-    saveCustomers([...customers, customer]);
-    setCurrentCustomerId(customer.id);
-    try { localStorage.setItem("tw-customer-session", customer.id); } catch { /* ignore */ }
-    setView("customerOrders");
-    return { ok: true };
+  const handleCustomerSignup = async (name: string, phone: string, password: string) => {
+    try {
+      setAuthError("");
+      const profile = await customerSignup(name, phone, password);
+      setCurrentProfile(profile);
+      setOrders(await loadOrders());
+      setCurrentCustomerId(profile.id);
+      setView("customerOrders");
+      return { ok: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not create your account.";
+      setAuthError(message);
+      return { ok: false, error: message };
+    }
   };
 
-  const handleCustomerLogin = (phone: string, password: string): { ok: boolean; error?: string } => {
-    const customer = customers.find((c) => c.phone === phone && c.password === password);
-    if (!customer) return { ok: false, error: "Incorrect phone number or password." };
-
-    setCurrentCustomerId(customer.id);
-    try { localStorage.setItem("tw-customer-session", customer.id); } catch { /* ignore */ }
-    setView("customerOrders");
-    return { ok: true };
+  const handleCustomerLogin = async (phone: string, password: string) => {
+    try {
+      setAuthError("");
+      const profile = await customerLogin(phone, password);
+      setCurrentProfile(profile);
+      setOrders(await loadOrders());
+      setCurrentCustomerId(profile.id);
+      setView("customerOrders");
+      return { ok: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Incorrect phone number or password.";
+      setAuthError(message);
+      return { ok: false, error: message };
+    }
   };
 
-  const handleCustomerLogout = () => {
+  const handleAdminLogin = async (email: string, password: string) => {
+    try {
+      setAuthError("");
+      const profile = await adminLogin(email, password);
+      setCurrentProfile(profile);
+      setView("admin");
+      const [orderList, customerList] = await Promise.all([loadOrders(), loadCustomers()]);
+      setOrders(orderList);
+      setCustomers(customerList);
+      return { ok: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Incorrect admin credentials.";
+      setAuthError(message);
+      return { ok: false, error: message };
+    }
+  };
+
+  const handleCustomerLogout = async () => { await handleLogout(); };
+
+  const handleLogout = async () => {
+    try { await logout(); } catch (error) { console.error(error); }
+    setCurrentProfile(null);
     setCurrentCustomerId(null);
-    try { localStorage.removeItem("tw-customer-session"); } catch { /* ignore */ }
-    goHome();
+    setView("home");
   };
 
-  const currentCustomer = customers.find((c) => c.id === currentCustomerId) ?? null;
+  const currentCustomer = currentProfile?.role === "customer" ? { id: currentProfile.id, name: currentProfile.name, phone: currentProfile.phone } : null;
 
   // --------------------------------------------------
   // ORDER STEPS
@@ -296,11 +319,15 @@ export default function App() {
 
   const step = stepMap[view];
 
+  if (authLoading) {
+    return <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: T.sand, color: T.ink60 }}>Connecting…</div>;
+  }
+
   // --------------------------------------------------
   // RENDER
   // --------------------------------------------------
 
-  const showChrome = view !== "admin" && view !== "superAdmin";
+  const showChrome = view !== "admin";
 
   return (
     <div
@@ -315,8 +342,7 @@ export default function App() {
         <Header
           goHome={goHome}
           goMenu={goMenu}
-          goOwnerLogin={goOwnerLogin}
-          goSuperAdminLogin={goSuperAdminLogin}
+          goLogin={goLogin}
           goCustomerArea={goCustomerArea}
           isCustomerLoggedIn={!!currentCustomer}
           customerName={currentCustomer?.name}
@@ -325,6 +351,10 @@ export default function App() {
           openCart={goCart}
           dark={view === "home"}
         />
+      )}
+
+      {view === "login" && (
+        <LoginPage onSelect={selectLoginRole} onBack={goHome} />
       )}
 
       {view === "home" && (
@@ -390,12 +420,7 @@ export default function App() {
 
       {/* Customer account area */}
       {view === "customerAuth" && (
-        <CustomerAuth
-          customers={customers}
-          onSignup={handleCustomerSignup}
-          onLogin={handleCustomerLogin}
-          onBack={goHome}
-        />
+        <CustomerAuth onSignup={handleCustomerSignup} onLogin={handleCustomerLogin} onBack={goHome} />
       )}
 
       {view === "customerOrders" && currentCustomer && (
@@ -407,42 +432,28 @@ export default function App() {
         />
       )}
 
-      {/* Owner dashboard — menu + orders */}
-      {view === "admin" &&
-        (isOwner ? (
-          <AdminPage
-            menuItems={menuItems}
-            saveMenu={saveMenu}
-            orders={orders}
-            updateStatus={updateStatus}
-            onLogout={() => {
-              setIsOwner(false);
-              goHome();
-            }}
-          />
-        ) : (
-          <AdminLogin onLogin={() => setIsOwner(true)} goHome={goHome} />
-        ))}
+      {/* Admin dashboard */}
+      {view === "admin" && (currentProfile?.role === "admin" ? (
+        <SuperAdminPage
+          menuItems={menuItems}
+          saveMenu={saveMenu}
+          deleteMenuItem={async (id) => { await deleteMenuItem(id); setMenuItems((current) => current.filter((item) => item.id !== id)); }}
+          orders={orders}
+          updateStatus={updateStatus}
+          customers={customers}
+          onLogout={handleLogout}
+        />
+      ) : (
+        <AdminLogin onLogin={handleAdminLogin} goHome={goHome} />
+      ))}
 
-      {/* Full-access admin — menu + orders + customers */}
-      {view === "superAdmin" &&
-        (isSuperAdmin ? (
-          <SuperAdminPage
-            menuItems={menuItems}
-            saveMenu={saveMenu}
-            orders={orders}
-            updateStatus={updateStatus}
-            customers={customers}
-            onLogout={() => {
-              setIsSuperAdmin(false);
-              goHome();
-            }}
-          />
-        ) : (
-          <SuperAdminLogin onLogin={() => setIsSuperAdmin(true)} goHome={goHome} />
-        ))}
+      {authError && view !== "customerAuth" && view !== "admin" && (
+        <div style={{ position: "fixed", left: 20, right: 20, bottom: 20, zIndex: 100, background: "#9A5555", color: "#fff", padding: "12px 16px", borderRadius: 10, maxWidth: 560, margin: "0 auto", fontSize: 13 }}>
+          {authError}
+        </div>
+      )}
 
-      {showChrome && <Footer goMenu={goMenu} goHome={goHome} goAdmin={goOwnerLogin} />}
+      {showChrome && <Footer goMenu={goMenu} goHome={goHome} goAdmin={goLogin} />}
     </div>
   );
 }

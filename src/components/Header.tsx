@@ -6,8 +6,7 @@ import { SeaIcon, Button, navLinkStyle } from "./ui";
 interface HeaderProps {
   goHome: () => void;
   goMenu: () => void;
-  goOwnerLogin: () => void;
-  goSuperAdminLogin: () => void;
+  goLogin: () => void;
   goCustomerArea: () => void;
   isCustomerLoggedIn: boolean;
   customerName?: string;
@@ -17,7 +16,7 @@ interface HeaderProps {
   dark?: boolean;
 }
 
-export default function Header({ goHome, goMenu, goOwnerLogin, goSuperAdminLogin, goCustomerArea, isCustomerLoggedIn, customerName, openOrderType, cartCount, openCart, dark }: HeaderProps) {
+export default function Header({ goHome, goMenu, goLogin, goCustomerArea, isCustomerLoggedIn, customerName, openOrderType, cartCount, openCart, dark }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const accountLabel = isCustomerLoggedIn ? `Hi, ${customerName?.split(" ")[0] ?? "there"}` : "My Orders";
   return (
@@ -40,9 +39,7 @@ export default function Header({ goHome, goMenu, goOwnerLogin, goSuperAdminLogin
           <button onClick={goHome} style={navLinkStyle}>Home</button>
           <button onClick={goMenu} style={navLinkStyle}>Menu</button>
           <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call</a>
-          <button onClick={goCustomerArea} style={{ ...navLinkStyle, display: "flex", alignItems: "center", gap: 5 }}><User size={14} /> {accountLabel}</button>
-          <button onClick={goOwnerLogin} style={navLinkStyle}>Owner Login</button>
-          <button onClick={goSuperAdminLogin} style={navLinkStyle}>Admin</button>
+          <button onClick={goLogin} style={{ ...navLinkStyle, display: "flex", alignItems: "center", gap: 5 }}><User size={14} /> Login</button>
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -65,9 +62,7 @@ export default function Header({ goHome, goMenu, goOwnerLogin, goSuperAdminLogin
           <button onClick={() => { goHome(); setMobileOpen(false); }} style={navLinkStyle}>Home</button>
           <button onClick={() => { goMenu(); setMobileOpen(false); }} style={navLinkStyle}>Menu</button>
           <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call {RESTAURANT.phone}</a>
-          <button onClick={() => { goCustomerArea(); setMobileOpen(false); }} style={navLinkStyle}>{accountLabel}</button>
-          <button onClick={() => { goOwnerLogin(); setMobileOpen(false); }} style={navLinkStyle}>Owner Login</button>
-          <button onClick={() => { goSuperAdminLogin(); setMobileOpen(false); }} style={navLinkStyle}>Admin</button>
+          <button onClick={() => { goLogin(); setMobileOpen(false); }} style={navLinkStyle}>Login</button>
           <Button variant="primary" size="sm" onClick={() => { openOrderType(); setMobileOpen(false); }}>Order Now</Button>
         </div>
       )}

@@ -11,6 +11,7 @@ import type { Customer, MenuItem, Order, OrderStatus } from "../types";
 interface SuperAdminPageProps {
   menuItems: MenuItem[];
   saveMenu: (next: MenuItem[]) => void;
+  deleteMenuItem?: (id: string) => Promise<void>;
   orders: Order[];
   updateStatus: (orderNumber: string, status: OrderStatus) => void;
   customers: Customer[];
@@ -23,7 +24,7 @@ function tabStyle(active: boolean): CSSProperties {
   return { display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, border: `1.5px solid ${active ? T.ink : T.line}`, background: active ? T.ink : "#fff", color: active ? "#fff" : T.ink, fontWeight: 600, fontSize: 14, cursor: "pointer" };
 }
 
-export default function SuperAdminPage({ menuItems, saveMenu, orders, updateStatus, customers, onLogout }: SuperAdminPageProps) {
+export default function SuperAdminPage({ menuItems, saveMenu, deleteMenuItem, orders, updateStatus, customers, onLogout }: SuperAdminPageProps) {
   const [tab, setTab] = useState<Tab>("orders");
   return (
     <div style={{ background: T.sand, minHeight: "80vh", padding: "30px 20px 80px" }}>
@@ -43,7 +44,7 @@ export default function SuperAdminPage({ menuItems, saveMenu, orders, updateStat
         </div>
 
         {tab === "orders" && <AdminOrders orders={orders} updateStatus={updateStatus} />}
-        {tab === "menu" && <AdminMenuManager menuItems={menuItems} saveMenu={saveMenu} />}
+        {tab === "menu" && <AdminMenuManager menuItems={menuItems} saveMenu={saveMenu} deleteMenuItem={deleteMenuItem} />}
         {tab === "customers" && <CustomersList customers={customers} orders={orders} />}
       </div>
     </div>

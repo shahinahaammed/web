@@ -23,9 +23,10 @@ export function emptyItemForm(): ItemForm {
 interface AdminMenuManagerProps {
   menuItems: MenuItem[];
   saveMenu: (next: MenuItem[]) => void;
+  deleteMenuItem?: (id: string) => Promise<void>;
 }
 
-export default function AdminMenuManager({ menuItems, saveMenu }: AdminMenuManagerProps) {
+export default function AdminMenuManager({ menuItems, saveMenu, deleteMenuItem }: AdminMenuManagerProps) {
   const [form, setForm] = useState<ItemForm>(emptyItemForm());
   const [editing, setEditing] = useState(false);
   const [filterCat, setFilterCat] = useState("all");
@@ -46,7 +47,7 @@ export default function AdminMenuManager({ menuItems, saveMenu }: AdminMenuManag
     cancel();
   };
 
-  const remove = (id: string) => { if (window.confirm("Delete this item?")) saveMenu(menuItems.filter((m) => m.id !== id)); };
+  const remove = async (id: string) => { if (!window.confirm("Delete this item?")) return; if (deleteMenuItem) await deleteMenuItem(id); else saveMenu(menuItems.filter((m) => m.id !== id)); };
   const toggle = (id: string, key: "available" | "popular") => saveMenu(menuItems.map((m) => (m.id === id ? { ...m, [key]: !m[key] } : m)));
 
   const visible = filterCat === "all" ? menuItems : menuItems.filter((m) => m.category === filterCat);

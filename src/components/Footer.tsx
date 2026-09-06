@@ -5,7 +5,7 @@ import { SeaIcon } from "./ui";
 interface FooterProps {
   goMenu: () => void;
   goHome: () => void;
-  goAdmin: () => void;
+  goAdmin?: () => void;
 }
 
 export default function Footer({ goMenu, goHome, goAdmin }: FooterProps) {
@@ -25,7 +25,7 @@ export default function Footer({ goMenu, goHome, goAdmin }: FooterProps) {
           <div style={footerHead}>Explore</div>
           <button onClick={goHome} style={footerLink}>Home</button>
           <button onClick={goMenu} style={footerLink}>Menu</button>
-          <button onClick={goAdmin} style={footerLink}>Owner Login</button>
+          {goAdmin && <button onClick={goAdmin} style={footerLink}>Admin Login</button>}
         </div>
         <div>
           <div style={footerHead}>Contact</div>
