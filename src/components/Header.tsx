@@ -7,18 +7,14 @@ interface HeaderProps {
   goHome: () => void;
   goMenu: () => void;
   goLogin: () => void;
-  goCustomerArea: () => void;
-  isCustomerLoggedIn: boolean;
-  customerName?: string;
   openOrderType: () => void;
   cartCount: number;
   openCart: () => void;
   dark?: boolean;
 }
 
-export default function Header({ goHome, goMenu, goLogin, goCustomerArea, isCustomerLoggedIn, customerName, openOrderType, cartCount, openCart, dark }: HeaderProps) {
+export default function Header({ goHome, goMenu, goLogin, openOrderType, cartCount, openCart, dark }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const accountLabel = isCustomerLoggedIn ? `Hi, ${customerName?.split(" ")[0] ?? "there"}` : "My Orders";
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 40, background: dark ? "transparent" : T.ink,

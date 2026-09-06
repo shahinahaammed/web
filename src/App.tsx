@@ -107,7 +107,6 @@ export default function App() {
     catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
   }, []);
 
-  const saveOrders = useCallback((next: Order[]) => setOrders(next), []);
 
   // --------------------------------------------------
   // NAVIGATION
@@ -124,9 +123,6 @@ export default function App() {
     setView(role === "customer" ? "customerAuth" : "admin");
   };
 
-  const goCustomerArea = () => {
-    setView(currentCustomerId ? "customerOrders" : "customerAuth");
-  };
 
   // --------------------------------------------------
   // ORDER TYPE
@@ -343,9 +339,6 @@ export default function App() {
           goHome={goHome}
           goMenu={goMenu}
           goLogin={goLogin}
-          goCustomerArea={goCustomerArea}
-          isCustomerLoggedIn={!!currentCustomer}
-          customerName={currentCustomer?.name}
           openOrderType={() => startOrder()}
           cartCount={cartCount}
           openCart={goCart}
