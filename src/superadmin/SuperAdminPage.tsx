@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { ShieldCheck, LogOut, ClipboardList, Utensils, Users } from "lucide-react";
+import { ShieldCheck, LogOut, ClipboardList, Utensils, Users, RefreshCw } from "lucide-react";
 import { T, RESTAURANT } from "../data/site";
 import { Button } from "../components/ui";
 import AdminOrders from "../admin/AdminOrders";
@@ -16,6 +16,7 @@ interface SuperAdminPageProps {
   updateStatus: (orderNumber: string, status: OrderStatus) => void;
   customers: Customer[];
   onLogout: () => void;
+  onRefresh: () => void | Promise<void>;
 }
 
 type Tab = "orders" | "menu" | "customers";
@@ -24,7 +25,7 @@ function tabStyle(active: boolean): CSSProperties {
   return { display: "flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, border: `1.5px solid ${active ? T.ink : T.line}`, background: active ? T.ink : "#fff", color: active ? "#fff" : T.ink, fontWeight: 600, fontSize: 14, cursor: "pointer" };
 }
 
-export default function SuperAdminPage({ menuItems, saveMenu, deleteMenuItem, orders, updateStatus, customers, onLogout }: SuperAdminPageProps) {
+export default function SuperAdminPage({ menuItems, saveMenu, deleteMenuItem, orders, updateStatus, customers, onLogout, onRefresh }: SuperAdminPageProps) {
   const [tab, setTab] = useState<Tab>("orders");
   return (
     <div style={{ background: T.sand, minHeight: "80vh", padding: "30px 20px 80px" }}>
@@ -34,7 +35,10 @@ export default function SuperAdminPage({ menuItems, saveMenu, deleteMenuItem, or
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.ink, fontWeight: 700, fontSize: 13, marginBottom: 6 }}><ShieldCheck size={16} /> Full-access admin</div>
             <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(24px,3vw,32px)", fontWeight: 600, color: T.ink, margin: 0 }}>Admin — {RESTAURANT.name}</h1>
           </div>
-          <Button variant="outline" size="sm" onClick={onLogout}><LogOut size={14} /> Log out</Button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button variant="ghost" size="sm" onClick={() => void onRefresh()}><RefreshCw size={14} /> Refresh</Button>
+            <Button variant="outline" size="sm" onClick={onLogout}><LogOut size={14} /> Log out</Button>
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>

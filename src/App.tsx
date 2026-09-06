@@ -59,7 +59,15 @@ export default function App() {
   const refreshBackendData = useCallback(async (withOrders = false) => {
     const menu = await loadMenu();
     setMenuItems(menu.length ? menu : SEED_MENU);
-    if (withOrders) setOrders(await loadOrders());
+    if (withOrders) {
+      try {
+        const freshOrders = await loadOrders();
+        setOrders(freshOrders);
+      } catch (error) {
+        console.error("Failed to load orders:", error);
+        setAuthError(error instanceof Error ? `Could not load orders: ${error.message}` : "Could not load orders.");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -71,7 +79,6 @@ export default function App() {
           const profile = await getProfile(session.user.id);
           setCurrentProfile(profile);
           setCurrentCustomerId(profile.role === "customer" ? profile.id : null);
-          setView(profile.role === "admin" ? "admin" : "customerOrders");
           await refreshBackendData(true);
         } else {
           await refreshBackendData(false);
@@ -105,6 +112,17 @@ export default function App() {
   const saveMenu = useCallback(async (next: MenuItem[]) => {
     try { setMenuItems(await upsertMenu(next)); }
     catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
+  }, []);
+
+  const refreshOrders = useCallback(async () => {
+    try {
+      const freshOrders = await loadOrders();
+      setOrders(freshOrders);
+      setAuthError("");
+    } catch (error) {
+      console.error("Failed to refresh orders:", error);
+      setAuthError(error instanceof Error ? `Could not load orders: ${error.message}` : "Could not load orders.");
+    }
   }, []);
 
   // --------------------------------------------------
@@ -427,6 +445,7 @@ export default function App() {
           orders={orders}
           onBack={goHome}
           onLogout={handleCustomerLogout}
+          onRefresh={refreshOrders}
         />
       )}
 
@@ -440,6 +459,7 @@ export default function App() {
           updateStatus={updateStatus}
           customers={customers}
           onLogout={handleLogout}
+          onRefresh={refreshOrders}
         />
       ) : (
         <AdminLogin onLogin={handleAdminLogin} goHome={goHome} />
