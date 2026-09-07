@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { T, SEED_MENU, DELIVERY_FEE } from "./data/site";
 import { supabase } from "./lib/supabase";
 import { adminLogin, createOrder, customerLogin, customerSignup, deleteMenuItem, getProfile, getSession, loadCustomers, loadMenu, loadOrders, logout, updateOrderStatus, upsertMenu } from "./lib/backend";
+import { getErrorMessage } from "./utils/helpers";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -78,7 +79,7 @@ export default function App() {
         }
       } catch (error) {
         console.error("Backend initialization failed:", error);
-        setAuthError(error instanceof Error ? error.message : "Could not connect to the backend.");
+        setAuthError(getErrorMessage(error, "Could not connect to the backend."));
       } finally {
         if (mounted) setAuthLoading(false);
       }
@@ -104,7 +105,7 @@ export default function App() {
 
   const saveMenu = useCallback(async (next: MenuItem[]) => {
     try { setMenuItems(await upsertMenu(next)); }
-    catch (error) { setAuthError(error instanceof Error ? error.message : "Could not save menu."); }
+    catch (error) { setAuthError(getErrorMessage(error, "Could not save menu.")); }
   }, []);
 
 
@@ -118,6 +119,7 @@ export default function App() {
   const goCheckout = () => setView("checkout");
 
   const goLogin = () => setView("login");
+  const goCustomerArea = () => setView("customerOrders");
   const selectLoginRole = (role: "customer" | "admin") => {
     setAuthError("");
     setView(role === "customer" ? "customerAuth" : "admin");
@@ -220,7 +222,7 @@ export default function App() {
       setCart({});
       setView("confirmation");
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : "Could not place your order.");
+      setAuthError(getErrorMessage(error, "Could not place your order."));
     }
   };
 
@@ -233,7 +235,7 @@ export default function App() {
       await updateOrderStatus(orderNumber, status);
       setOrders((current) => current.map((order) => order.orderNumber === orderNumber ? { ...order, status } : order));
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : "Could not update the order.");
+      setAuthError(getErrorMessage(error, "Could not update the order."));
     }
   };
 
@@ -251,7 +253,7 @@ export default function App() {
       setView("customerOrders");
       return { ok: true };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not create your account.";
+      const message = getErrorMessage(error, "Could not create your account.");
       setAuthError(message);
       return { ok: false, error: message };
     }
@@ -267,7 +269,7 @@ export default function App() {
       setView("customerOrders");
       return { ok: true };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Incorrect email or password.";
+      const message = getErrorMessage(error, "Incorrect email or password.");
       setAuthError(message);
       return { ok: false, error: message };
     }
@@ -284,7 +286,7 @@ export default function App() {
       setCustomers(customerList);
       return { ok: true };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Incorrect admin credentials.";
+      const message = getErrorMessage(error, "Incorrect admin credentials.");
       setAuthError(message);
       return { ok: false, error: message };
     }
@@ -339,6 +341,9 @@ export default function App() {
           goHome={goHome}
           goMenu={goMenu}
           goLogin={goLogin}
+          goCustomerArea={goCustomerArea}
+          isCustomerLoggedIn={!!currentCustomer}
+          customerName={currentCustomer?.name}
           openOrderType={() => startOrder()}
           cartCount={cartCount}
           openCart={goCart}
@@ -398,6 +403,7 @@ export default function App() {
           total={total}
           onPlaceOrder={placeOrder}
           goCart={goCart}
+          customer={currentCustomer}
         />
       )}
 

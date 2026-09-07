@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { T } from "../data/site";
 import { Field, Pill, Button, StepIndicator, Row, navLinkStyle, inputStyle } from "../components/ui";
 import { money, orderTypeLabel } from "../utils/helpers";
-import type { Cart, CheckoutForm, OrderType } from "../types";
+import type { Cart, CheckoutForm, Customer, OrderType } from "../types";
 
 interface CheckoutPageProps {
   orderType: OrderType | null;
@@ -14,13 +14,14 @@ interface CheckoutPageProps {
   total: number;
   onPlaceOrder: (form: CheckoutForm) => void;
   goCart: () => void;
+  customer?: Customer | null;
 }
 
 type FormErrors = Partial<Record<keyof CheckoutForm, string>>;
 
-export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, total, onPlaceOrder, goCart }: CheckoutPageProps) {
+export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, total, onPlaceOrder, goCart, customer }: CheckoutPageProps) {
   const [form, setForm] = useState<CheckoutForm>({
-    name: "", phone: "", tableNumber: "", people: "", pickupTime: "",
+    name: customer?.name ?? "", phone: customer?.phone ?? "", tableNumber: "", people: "", pickupTime: "",
     area: "", building: "", flat: "", address: "", deliveryInstructions: "", instructions: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -54,6 +55,11 @@ export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, t
         <StepIndicator step={3} />
         <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(24px,3vw,32px)", fontWeight: 600, color: T.ink, marginBottom: 6 }}>Checkout</h1>
         <Pill tone="tide">{orderTypeLabel(orderType)}</Pill>
+        {customer && (
+          <p style={{ fontSize: 13, color: T.tide, marginTop: 10 }}>
+            Signed in as {customer.name} — your details are filled in below.
+          </p>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1.2fr .8fr", gap: 20, marginTop: 24 }} className="tw-checkout-grid">
           <div style={{ background: "#fff", borderRadius: 14, border: `1.5px solid ${T.line}`, padding: 22 }}>
