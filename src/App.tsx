@@ -51,7 +51,6 @@ export default function App() {
 
   // Backend data
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [currentCustomerId, setCurrentCustomerId] = useState<string | null>(null);
 
   // --------------------------------------------------
   // LOAD DATA + AUTH SESSION
