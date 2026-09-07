@@ -108,18 +108,50 @@ export async function loadOrders(): Promise<Order[]> {
 }
 
 export async function createOrder(order: Order) {
-  const { error } = await supabase.from("orders").insert({
-    order_number: order.orderNumber,
-    customer_id: order.customerId ?? null,
+  const cleanForm: CheckoutForm = {
+    name: String(order.form.name ?? ""),
+    phone: String(order.form.phone ?? ""),
+    tableNumber: String(order.form.tableNumber ?? ""),
+    people: String(order.form.people ?? ""),
+    pickupTime: String(order.form.pickupTime ?? ""),
+    area: String(order.form.area ?? ""),
+    building: String(order.form.building ?? ""),
+    flat: String(order.form.flat ?? ""),
+    address: String(order.form.address ?? ""),
+    deliveryInstructions: String(order.form.deliveryInstructions ?? ""),
+    instructions: String(order.form.instructions ?? ""),
+  };
+
+  const cleanItems: CartItem[] = order.items.map((item) => ({
+    id: String(item.id),
+    category: String(item.category),
+    name: String(item.name),
+    desc: String(item.desc ?? ""),
+    price: Number(item.price),
+    popular: Boolean(item.popular),
+    available: Boolean(item.available),
+    qty: Number(item.qty),
+  }));
+
+  const payload = {
+    order_number: String(order.orderNumber),
+    customer_id: order.customerId ? String(order.customerId) : null,
     order_type: order.orderType,
-    form: order.form,
-    items: order.items,
-    subtotal: order.subtotal,
-    delivery_fee: order.deliveryFee,
-    total: order.total,
+    form: cleanForm,
+    items: cleanItems,
+    subtotal: Number(order.subtotal),
+    delivery_fee: Number(order.deliveryFee),
+    total: Number(order.total),
     status: order.status,
-  });
-  if (error) throw error;
+  };
+
+  const { error } = await supabase
+    .from("orders")
+    .insert(payload);
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function updateOrderStatus(orderNumber: string, status: OrderStatus) {
