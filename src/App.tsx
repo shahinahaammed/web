@@ -119,7 +119,7 @@ export default function App() {
   const goCheckout = () => setView("checkout");
 
   const goLogin = () => setView("login");
-  const goCustomerArea = () => setView("customerOrders");
+  const goCustomerArea = () => setView(orderType && Object.keys(cart).length > 0 ? "checkout" : "customerOrders");
   const selectLoginRole = (role: "customer" | "admin") => {
     setAuthError("");
     setView(role === "customer" ? "customerAuth" : "admin");
@@ -205,26 +205,43 @@ export default function App() {
   // PLACE ORDER
   // --------------------------------------------------
 
-  const placeOrder = async (form: CheckoutForm) => {
-    if (!orderType || !currentCustomerId) {
-      setAuthError("Please log in as a customer before placing an order.");
-      setView("customerAuth");
-      return;
-    }
+const placeOrder = async (form: CheckoutForm) => {
+  if (!orderType) {
+    setAuthError("Please select an order type.");
+    return;
+  }
 
-    const orderNumber = "TW-" + Date.now().toString().slice(-6);
-    const order: Order = { orderNumber, orderType, form, items: Object.values(cart), subtotal, deliveryFee, total, status: "New", createdAt: Date.now(), customerId: currentCustomerId };
+  if (!currentProfile || currentProfile.role !== "customer") {
+    setAuthError("Please log in as a customer before placing an order.");
+    setView("customerAuth");
+    return;
+  }
 
-    try {
-      await createOrder(order);
-      setOrders([order, ...orders]);
-      setLastOrder(order);
-      setCart({});
-      setView("confirmation");
-    } catch (error) {
-      setAuthError(getErrorMessage(error, "Could not place your order."));
-    }
+  const orderNumber = "TW-" + Date.now().toString().slice(-6);
+
+  const order: Order = {
+    orderNumber,
+    orderType,
+    form,
+    items: Object.values(cart),
+    subtotal,
+    deliveryFee,
+    total,
+    status: "New",
+    createdAt: Date.now(),
+    customerId: currentProfile.id,
   };
+
+  try {
+    await createOrder(order);
+    setOrders((current) => [order, ...current]);
+    setLastOrder(order);
+    setCart({});
+    setView("confirmation");
+  } catch (error) {
+    setAuthError(getErrorMessage(error, "Could not place your order."));
+  }
+};
 
   // --------------------------------------------------
   // UPDATE ORDER STATUS
@@ -250,7 +267,7 @@ export default function App() {
       setCurrentProfile(profile);
       setOrders(await loadOrders());
       setCurrentCustomerId(profile.id);
-      setView("customerOrders");
+      setView(orderType && Object.keys(cart).length > 0 ? "checkout" : "customerOrders");
       return { ok: true };
     } catch (error) {
       const message = getErrorMessage(error, "Could not create your account.");
@@ -266,7 +283,7 @@ export default function App() {
       setCurrentProfile(profile);
       setOrders(await loadOrders());
       setCurrentCustomerId(profile.id);
-      setView("customerOrders");
+      setView(orderType && Object.keys(cart).length > 0 ? "checkout" : "customerOrders");
       return { ok: true };
     } catch (error) {
       const message = getErrorMessage(error, "Incorrect email or password.");
