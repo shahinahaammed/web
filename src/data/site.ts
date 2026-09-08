@@ -8,6 +8,7 @@ export const T = {
   coral: "#E1673D",
   coralDeep: "#C24F2A",
   sand: "#F6F1E6",
+  cream: "#FBF8F1",
   foam: "#FFFFFF",
   brass: "#C79A3E",
   line: "#E4DCC9",
