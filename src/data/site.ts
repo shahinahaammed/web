@@ -79,20 +79,20 @@ export const SEED_MENU: MenuItem[] = [
 ];
 
 export const RESTAURANT = {
-  name: "Tidewater",
-  sub: "Seafood Co.",
+  name: "Bayah",
+  sub: "Seafood Restaurant",
   tagline: "Off the boat, onto the grill — today's catch, plated simply.",
-  phone: "+9961723663",
-  whatsapp: "+919961723663",
-  address: "Jumeirah Fishing Harbour Road, Dubai, UAE",
+  phone: "+971 56 777 1204",
+  whatsapp: "+971 56 777 1204",
+  address: "Al Lisaily Shabiya, Khalifa Building - الليسيلي Shop3 - Al Marmoum - Dubai",
   hours: [
-    { d: "Monday – Thursday", h: "12:00 PM – 11:30 PM" },
-    { d: "Friday – Saturday", h: "12:00 PM – 1:00 AM" },
-    { d: "Sunday", h: "1:00 PM – 11:00 PM" },
+    { d: "Monday – Thursday", h: "09:00 AM – 12:00 PM" },
+    { d: "Friday – Saturday", h: "09:00 AM – 12:00 PM" },
+    { d: "Sunday", h: "09:00 AM – 12:00 PM" },
   ],
-  mapQuery: "Jumeirah Fishing Harbour, Dubai",
-  instagram: "https://instagram.com",
-  facebook: "https://facebook.com",
+  mapQuery: "Al Lisaily Shabiya, Khalifa Building - الليسيلي Shop3 - Al Marmoum - Dubai",
+  instagram: "https://www.instagram.com/bayah_seafood/",
+  facebook: "https://www.facebook.com/BayahSeafoodRestaurant/",
 };
 
 
