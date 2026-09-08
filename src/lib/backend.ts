@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase";
 import type { Customer, MenuItem, Order, OrderStatus, OrderType, CheckoutForm, CartItem } from "../types";
 
 const mapMenu = (row: any): MenuItem => ({
@@ -145,12 +145,37 @@ export async function createOrder(order: Order) {
     status: order.status,
   };
 
-  const { error } = await supabase
-    .from("orders")
-    .insert(payload);
+  // Bypassing the supabase-js .insert() builder here deliberately: it was
+  // triggering a "Converting circular structure to JSON" crash even with a
+  // fully-primitive, hand-verified payload, which points to the SDK/bundler
+  // interaction rather than our data. A plain fetch() against Supabase's
+  // REST API sidesteps that machinery entirely.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token ?? SUPABASE_ANON_KEY;
 
-  if (error) {
-    throw error;
+  const bodyText = JSON.stringify(payload);
+
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`,
+      Prefer: "return=minimal",
+    },
+    body: bodyText,
+  });
+
+  if (!response.ok) {
+    let message = `Order could not be saved (${response.status}).`;
+    try {
+      const errBody = await response.json();
+      if (errBody?.message) message = errBody.message;
+      if (errBody?.hint) message += ` (${errBody.hint})`;
+    } catch {
+      // response wasn't JSON — keep the generic status-based message
+    }
+    throw new Error(message);
   }
 }
 
