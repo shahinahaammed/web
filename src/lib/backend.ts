@@ -133,18 +133,6 @@ export async function createOrder(order: Order) {
     qty: Number(item.qty),
   }));
 
-  const payload = {
-    order_number: String(order.orderNumber),
-    customer_id: order.customerId ? String(order.customerId) : null,
-    order_type: order.orderType,
-    form: cleanForm,
-    items: cleanItems,
-    subtotal: Number(order.subtotal),
-    delivery_fee: Number(order.deliveryFee),
-    total: Number(order.total),
-    status: order.status,
-  };
-
   // Bypassing the supabase-js .insert() builder here deliberately: it was
   // triggering a "Converting circular structure to JSON" crash even with a
   // fully-primitive, hand-verified payload, which points to the SDK/bundler
@@ -153,7 +141,48 @@ export async function createOrder(order: Order) {
   const { data: sessionData } = await supabase.auth.getSession();
   const accessToken = sessionData.session?.access_token ?? SUPABASE_ANON_KEY;
 
-  const bodyText = JSON.stringify(payload);
+  // Build the JSON text from already-coerced primitive values. This avoids
+  // the circular-structure failure that was occurring in the browser build
+  // when JSON.stringify() was given the original application object graph.
+  const jsonString = (value: unknown) => JSON.stringify(String(value ?? ""));
+  const jsonNumber = (value: unknown) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? String(number) : "0";
+  };
+  const jsonBoolean = (value: unknown) => (Boolean(value) ? "true" : "false");
+
+  const bodyText = `{
+    "order_number": ${jsonString(String(order.orderNumber))},
+    "customer_id": ${order.customerId ? jsonString(String(order.customerId)) : "null"},
+    "order_type": ${jsonString(String(order.orderType))},
+    "form": {
+      "name": ${jsonString(cleanForm.name)},
+      "phone": ${jsonString(cleanForm.phone)},
+      "tableNumber": ${jsonString(cleanForm.tableNumber)},
+      "people": ${jsonString(cleanForm.people)},
+      "pickupTime": ${jsonString(cleanForm.pickupTime)},
+      "area": ${jsonString(cleanForm.area)},
+      "building": ${jsonString(cleanForm.building)},
+      "flat": ${jsonString(cleanForm.flat)},
+      "address": ${jsonString(cleanForm.address)},
+      "deliveryInstructions": ${jsonString(cleanForm.deliveryInstructions)},
+      "instructions": ${jsonString(cleanForm.instructions)}
+    },
+    "items": [${cleanItems.map((item) => `{
+      "id": ${jsonString(item.id)},
+      "category": ${jsonString(item.category)},
+      "name": ${jsonString(item.name)},
+      "desc": ${jsonString(item.desc)},
+      "price": ${jsonNumber(item.price)},
+      "popular": ${jsonBoolean(item.popular)},
+      "available": ${jsonBoolean(item.available)},
+      "qty": ${jsonNumber(item.qty)}
+    }`).join(",")}],
+    "subtotal": ${jsonNumber(order.subtotal)},
+    "delivery_fee": ${jsonNumber(order.deliveryFee)},
+    "total": ${jsonNumber(order.total)},
+    "status": ${jsonString(String(order.status))}
+  }`;
 
   const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
     method: "POST",

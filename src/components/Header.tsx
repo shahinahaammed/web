@@ -66,7 +66,7 @@ export default function Header({
           <NavButton color={textColor} onClick={goHome}>Home</NavButton>
           <NavButton color={textColor} onClick={goMenu}>Menu</NavButton>
           <NavButton color={textColor} onClick={openOrderType}>Order</NavButton>
-          <NavButton color={textColor} onClick={goLogin}>Login</NavButton>
+          <NavButton color={textColor} onClick={goLogin}>Customer Login</NavButton>
           <CartButton color={textColor} count={cartCount} onClick={openCart} />
         </nav>
 
@@ -90,7 +90,7 @@ export default function Header({
             <MobileButton color={textColor} onClick={() => navigate(goHome)}>Home</MobileButton>
             <MobileButton color={textColor} onClick={() => navigate(goMenu)}>Menu</MobileButton>
             <MobileButton color={textColor} onClick={() => navigate(openOrderType)}>Order Now</MobileButton>
-            <MobileButton color={textColor} onClick={() => navigate(goLogin)}>Customer / Admin Login</MobileButton>
+            <MobileButton color={textColor} onClick={() => navigate(goLogin)}>Customer Login</MobileButton>
           </nav>
         </div>
       )}

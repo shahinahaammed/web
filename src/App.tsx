@@ -26,8 +26,6 @@ import MenuPage from "./pages/MenuPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
-import LoginPage from "./pages/LoginPage";
-
 import AdminLogin from "./admin/AdminLogin";
 
 import CustomerAuth from "./customer/CustomerAuth";
@@ -61,7 +59,6 @@ export default function App() {
   const [currentProfile, setCurrentProfile] = useState<
     (Customer & { role: "customer" | "admin" }) | null
   >(null);
-  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
 
   // Backend data
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -90,7 +87,6 @@ export default function App() {
           const profile = await getProfile(session.user.id);
 
           setCurrentProfile(profile);
-          setIsGuestCheckout(false);
 
           if (profile.role === "admin") {
             setView("admin");
@@ -151,17 +147,22 @@ export default function App() {
   const goHome = () => setView("home");
   const goMenu = () => setView("menu");
   const goCart = () => setView("cart");
-  const goCheckout = () => setView("checkout");
-  const goLogin = () => setView("login");
-
-  const selectLoginRole = (role: "customer" | "admin") => {
+  const goCheckout = () => {
     setAuthError("");
-    setView(role === "customer" ? "customerAuth" : "admin");
+    setView("checkout");
+  };
+  const goLogin = () => {
+    setAuthError("");
+    setView("customerAuth");
+  };
+
+  const goAdmin = () => {
+    setAuthError("");
+    setView("admin");
   };
 
   const continueAsGuest = () => {
     setAuthError("");
-    setIsGuestCheckout(true);
     if (orderType && Object.keys(cart).length > 0) {
       setView("checkout");
     } else {
@@ -286,17 +287,6 @@ export default function App() {
       return;
     }
 
-    if (
-      (!currentProfile || currentProfile.role !== "customer") &&
-      !isGuestCheckout
-    ) {
-      setAuthError(
-        "Log in to save your order history, or continue as a guest."
-      );
-      setView("customerAuth");
-      return;
-    }
-
     const orderNumber =
       "TW-" + Date.now().toString().slice(-6);
 
@@ -375,7 +365,6 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
-      setIsGuestCheckout(false);
 
       const customerOrders = await loadOrders();
       setOrders(customerOrders);
@@ -417,7 +406,6 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
-      setIsGuestCheckout(false);
 
       const customerOrders = await loadOrders();
       setOrders(customerOrders);
@@ -460,7 +448,6 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
-      setIsGuestCheckout(false);
       setView("admin");
 
       const [orderList, customerList] =
@@ -500,7 +487,6 @@ export default function App() {
     }
 
     setCurrentProfile(null);
-    setIsGuestCheckout(false);
     setView("home");
   };
 
@@ -575,14 +561,6 @@ export default function App() {
           cartCount={cartCount}
           openCart={goCart}
           dark={view === "home"}
-        />
-      )}
-
-      {view === "login" && (
-        <LoginPage
-          onSelect={selectLoginRole}
-          onBack={goHome}
-          onContinueAsGuest={continueAsGuest}
         />
       )}
 
@@ -729,7 +707,7 @@ export default function App() {
         <Footer
           goMenu={goMenu}
           goHome={goHome}
-          goAdmin={goLogin}
+          goAdmin={goAdmin}
         />
       )}
     </div>
