@@ -167,6 +167,7 @@ export default function CartPage({
               {lines.map((line, i) => (
                 <div
                   key={line.id}
+                  className="tw-cart-line"
                   style={{
                     display: "flex",
                     alignItems: "center",

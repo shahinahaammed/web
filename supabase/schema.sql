@@ -99,10 +99,12 @@ create policy "admin delete menu" on public.menu_items for delete to authenticat
 -- Customers see only their own orders. Admin sees all and can update statuses.
 drop policy if exists "customer read own orders" on public.orders;
 drop policy if exists "customer create own orders" on public.orders;
+drop policy if exists "guest create orders" on public.orders;
 drop policy if exists "admin read all orders" on public.orders;
 drop policy if exists "admin update orders" on public.orders;
 create policy "customer read own orders" on public.orders for select to authenticated using ((select auth.uid()) = customer_id);
 create policy "customer create own orders" on public.orders for insert to authenticated with check ((select auth.uid()) = customer_id);
+create policy "guest create orders" on public.orders for insert to anon with check (customer_id is null);
 create policy "admin read all orders" on public.orders for select to authenticated using ((select public.is_admin()));
 create policy "admin update orders" on public.orders for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
@@ -113,4 +115,5 @@ create policy "admin update orders" on public.orders for update to authenticated
 revoke all on public.profiles, public.menu_items, public.orders from anon, authenticated;
 grant select on public.menu_items to anon, authenticated;
 grant select, update on public.profiles to authenticated;
+grant insert on public.orders to anon;
 grant select, insert, update on public.orders to authenticated;

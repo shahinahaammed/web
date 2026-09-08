@@ -22,8 +22,8 @@ function MenuRow({ item, qty, onAdd, onInc, onDec, last }: MenuRowProps) {
         <SeaIcon type={icon} size={24} color={T.tide} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontFamily: "Fraunces, serif", fontWeight: 600, fontSize: 18.5, color: T.ink, whiteSpace: "nowrap" }}>{item.name}</span>
+        <div className="tw-menu-title-row" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span className="tw-menu-name" style={{ fontFamily: "Fraunces, serif", fontWeight: 600, fontSize: 18.5, color: T.ink, whiteSpace: "nowrap" }}>{item.name}</span>
           <span style={{ flex: 1, borderBottom: `1.5px dotted ${T.line}`, marginBottom: 5, minWidth: 20 }} />
           <span style={{ fontWeight: 700, color: T.coralDeep, fontSize: 15.5, whiteSpace: "nowrap" }}>{money(item.price)}</span>
         </div>

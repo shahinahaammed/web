@@ -55,9 +55,13 @@ export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, t
         <StepIndicator step={3} />
         <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(24px,3vw,32px)", fontWeight: 600, color: T.ink, marginBottom: 6 }}>Checkout</h1>
         <Pill tone="tide">{orderTypeLabel(orderType)}</Pill>
-        {customer && (
+        {customer ? (
           <p style={{ fontSize: 13, color: T.tide, marginTop: 10 }}>
             Signed in as {customer.name} — your details are filled in below.
+          </p>
+        ) : (
+          <p style={{ fontSize: 13, color: T.ink60, marginTop: 10 }}>
+            <strong style={{ color: T.coralDeep }}>Guest checkout</strong> — no account required.
           </p>
         )}
 
@@ -68,7 +72,7 @@ export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, t
             <Field label="Phone number" error={errors.phone}><input style={inputStyle} value={form.phone} onChange={set("phone")} placeholder="e.g. 050 123 4567" /></Field>
 
             {orderType === "dine-in" && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="tw-form-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <Field label="Table number" error={errors.tableNumber}><input style={inputStyle} value={form.tableNumber} onChange={set("tableNumber")} placeholder="e.g. 12" /></Field>
                 <Field label="Number of people" error={errors.people}><input style={inputStyle} type="number" min="1" value={form.people} onChange={set("people")} placeholder="e.g. 2" /></Field>
               </div>
@@ -81,7 +85,7 @@ export default function CheckoutPage({ orderType, cart, subtotal, deliveryFee, t
             {orderType === "delivery" && (
               <>
                 <Field label="Full delivery address" error={errors.address}><input style={inputStyle} value={form.address} onChange={set("address")} placeholder="Street, community" /></Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <div className="tw-form-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <Field label="Area" error={errors.area}><input style={inputStyle} value={form.area} onChange={set("area")} placeholder="e.g. Jumeirah" /></Field>
                   <Field label="Building / Villa number" error={errors.building}><input style={inputStyle} value={form.building} onChange={set("building")} placeholder="e.g. Villa 14" /></Field>
                 </div>

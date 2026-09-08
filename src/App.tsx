@@ -61,6 +61,7 @@ export default function App() {
   const [currentProfile, setCurrentProfile] = useState<
     (Customer & { role: "customer" | "admin" }) | null
   >(null);
+  const [isGuestCheckout, setIsGuestCheckout] = useState(false);
 
   // Backend data
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -89,6 +90,7 @@ export default function App() {
           const profile = await getProfile(session.user.id);
 
           setCurrentProfile(profile);
+          setIsGuestCheckout(false);
 
           if (profile.role === "admin") {
             setView("admin");
@@ -155,6 +157,16 @@ export default function App() {
   const selectLoginRole = (role: "customer" | "admin") => {
     setAuthError("");
     setView(role === "customer" ? "customerAuth" : "admin");
+  };
+
+  const continueAsGuest = () => {
+    setAuthError("");
+    setIsGuestCheckout(true);
+    if (orderType && Object.keys(cart).length > 0) {
+      setView("checkout");
+    } else {
+      setView("orderType");
+    }
   };
 
   // --------------------------------------------------
@@ -275,11 +287,11 @@ export default function App() {
     }
 
     if (
-      !currentProfile ||
-      currentProfile.role !== "customer"
+      (!currentProfile || currentProfile.role !== "customer") &&
+      !isGuestCheckout
     ) {
       setAuthError(
-        "Please log in as a customer before placing an order."
+        "Log in to save your order history, or continue as a guest."
       );
       setView("customerAuth");
       return;
@@ -298,7 +310,10 @@ export default function App() {
       total,
       status: "New",
       createdAt: Date.now(),
-      customerId: currentProfile.id,
+      customerId:
+        currentProfile?.role === "customer"
+          ? currentProfile.id
+          : undefined,
     };
 
     try {
@@ -360,6 +375,7 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
+      setIsGuestCheckout(false);
 
       const customerOrders = await loadOrders();
       setOrders(customerOrders);
@@ -401,6 +417,7 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
+      setIsGuestCheckout(false);
 
       const customerOrders = await loadOrders();
       setOrders(customerOrders);
@@ -443,6 +460,7 @@ export default function App() {
       );
 
       setCurrentProfile(profile);
+      setIsGuestCheckout(false);
       setView("admin");
 
       const [orderList, customerList] =
@@ -482,6 +500,7 @@ export default function App() {
     }
 
     setCurrentProfile(null);
+    setIsGuestCheckout(false);
     setView("home");
   };
 
@@ -563,6 +582,7 @@ export default function App() {
         <LoginPage
           onSelect={selectLoginRole}
           onBack={goHome}
+          onContinueAsGuest={continueAsGuest}
         />
       )}
 
@@ -641,6 +661,7 @@ export default function App() {
           onSignup={handleCustomerSignup}
           onLogin={handleCustomerLogin}
           onBack={goHome}
+          onContinueAsGuest={continueAsGuest}
         />
       )}
 

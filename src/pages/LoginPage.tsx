@@ -7,6 +7,7 @@ type LoginRole = "customer" | "admin";
 interface LoginPageProps {
   onSelect: (role: LoginRole) => void;
   onBack: () => void;
+  onContinueAsGuest: () => void;
 }
 
 const roles = [
@@ -24,7 +25,7 @@ const roles = [
   },
 ];
 
-export default function LoginPage({ onSelect, onBack }: LoginPageProps) {
+export default function LoginPage({ onSelect, onBack, onContinueAsGuest }: LoginPageProps) {
   return (
     <div style={{ minHeight: "75vh", background: T.sand, padding: "50px 20px 80px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
@@ -51,6 +52,17 @@ export default function LoginPage({ onSelect, onBack }: LoginPageProps) {
               <div style={{ marginTop: 18, color: T.tide, fontWeight: 700, fontSize: 13.5 }}>Continue →</div>
             </button>
           ))}
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 22, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
+          <div style={{ color: T.ink60, fontSize: 13, marginBottom: 10 }}>Just want to order? No account needed.</div>
+          <button
+            type="button"
+            onClick={onContinueAsGuest}
+            style={{ background: "transparent", border: `1.5px solid ${T.coral}`, color: T.coralDeep, borderRadius: 9, padding: "11px 20px", cursor: "pointer", fontWeight: 700, fontSize: 13.5 }}
+          >
+            Continue as Guest →
+          </button>
         </div>
       </div>
     </div>

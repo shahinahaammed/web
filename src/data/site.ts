@@ -1,19 +1,19 @@
 import type { Category, MenuItem, OrderStatus } from "../types";
 
 export const T = {
-  ink: "#0B2436",
-  inkDeep: "#071827",
-  tide: "#2E7A76",
-  tideLight: "#DCEEEC",
-  coral: "#E1673D",
-  coralDeep: "#C24F2A",
-  sand: "#F6F1E6",
-  cream: "#FBF8F1",
+  ink: "#171717",
+  inkDeep: "#0D0D0D",
+  tide: "#C9181F",
+  tideLight: "#FDE8E9",
+  coral: "#E21D25",
+  coralDeep: "#A90F16",
+  sand: "#F7F2E8",
+  cream: "#FFFDF8",
   foam: "#FFFFFF",
-  brass: "#C79A3E",
-  line: "#E4DCC9",
-  ink60: "rgba(11,36,54,0.6)",
-  ink40: "rgba(11,36,54,0.4)",
+  brass: "#D99A16",
+  line: "#E5DCCF",
+  ink60: "rgba(23,23,23,0.62)",
+  ink40: "rgba(23,23,23,0.42)",
 };
 
 export const CATEGORIES: Category[] = [

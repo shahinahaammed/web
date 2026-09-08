@@ -7,9 +7,10 @@ interface CustomerAuthProps {
   onSignup: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   onLogin: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   onBack: () => void;
+  onContinueAsGuest: () => void;
 }
 
-export default function CustomerAuth({ onSignup, onLogin, onBack }: CustomerAuthProps) {
+export default function CustomerAuth({ onSignup, onLogin, onBack, onContinueAsGuest }: CustomerAuthProps) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -39,6 +40,10 @@ export default function CustomerAuth({ onSignup, onLogin, onBack }: CustomerAuth
         <Field label="Password" error={error}><input type="password" style={inputStyle} value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }} onKeyDown={(e) => e.key === "Enter" && void submit()} placeholder="Enter your password" /></Field>
         <Button variant="dark" full onClick={() => void submit()}>{busy ? "Please wait…" : mode === "login" ? "Log In" : "Create Account"}</Button>
         <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(""); }} style={{ ...navLinkStyle, color: T.tide, width: "100%", textAlign: "center", marginTop: 16, fontSize: 13.5 }}>{mode === "login" ? "New here? Create an account" : "Already have an account? Log in"}</button>
+        <div style={{ borderTop: `1px solid ${T.line}`, marginTop: 18, paddingTop: 16, textAlign: "center" }}>
+          <div style={{ color: T.ink60, fontSize: 12.5, marginBottom: 9 }}>No account? You can still place an order.</div>
+          <button type="button" onClick={onContinueAsGuest} style={{ ...navLinkStyle, color: T.coralDeep, width: "100%", textAlign: "center", fontWeight: 700, fontSize: 13.5 }}>Continue as Guest →</button>
+        </div>
       </div>
     </div>
   );
