@@ -1,72 +1,178 @@
-import { useState } from "react";
-import { ShoppingCart, Menu as MenuIcon, User } from "lucide-react";
-import { T, RESTAURANT } from "../data/site";
-import { SeaIcon, Button, navLinkStyle } from "./ui";
+import React from "react";
+import { T } from "../data/site";
 
-interface HeaderProps {
+type HeaderProps = {
   goHome: () => void;
   goMenu: () => void;
   goLogin: () => void;
-  goCustomerArea: () => void;
-  isCustomerLoggedIn: boolean;
-  customerName?: string;
   openOrderType: () => void;
   cartCount: number;
   openCart: () => void;
   dark?: boolean;
-}
+};
 
-export default function Header({ goHome, goMenu, goLogin, goCustomerArea, isCustomerLoggedIn, customerName, openOrderType, cartCount, openCart, dark }: HeaderProps) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const accountLabel = isCustomerLoggedIn ? `Hi, ${customerName?.split(" ")[0] || "there"}` : "Login";
-  const accountAction = isCustomerLoggedIn ? goCustomerArea : goLogin;
+export default function Header({
+  goHome,
+  goMenu,
+  goLogin,
+  openOrderType,
+  cartCount,
+  openCart,
+  dark = false,
+}: HeaderProps) {
   return (
-    <header style={{
-      position: "sticky", top: 0, zIndex: 40, background: dark ? "transparent" : T.ink,
-      borderBottom: dark ? "none" : "1px solid rgba(255,255,255,.08)",
-    }}>
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div onClick={goHome} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-          <div style={{ width: 38, height: 38, borderRadius: "50%", background: T.coral, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <SeaIcon type="fish" size={20} color="#fff" />
-          </div>
-          <div style={{ lineHeight: 1.05 }}>
-            <div style={{ fontFamily: "Fraunces, serif", fontWeight: 600, fontSize: 19, color: "#fff" }}>{RESTAURANT.name}</div>
-            <div style={{ fontSize: 10.5, letterSpacing: ".08em", color: "rgba(255,255,255,.6)" }}>{RESTAURANT.sub}</div>
-          </div>
-        </div>
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        background: dark ? "transparent" : T.cream,
+        borderBottom: dark
+          ? "1px solid rgba(255,255,255,0.15)"
+          : `1px solid ${T.line}`,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+          padding: "14px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 20,
+        }}
+      >
+        {/* Logo */}
+        <button
+          type="button"
+          onClick={goHome}
+          style={{
+            border: 0,
+            background: "transparent",
+            padding: 0,
+            cursor: "pointer",
+            color: dark ? "#fff" : T.ink,
+            fontSize: 20,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Bayah Seafood
+        </button>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 22 }} className="tw-desktop-nav">
-          <button onClick={goHome} style={navLinkStyle}>Home</button>
-          <button onClick={goMenu} style={navLinkStyle}>Menu</button>
-          <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call</a>
-          <button onClick={accountAction} style={{ ...navLinkStyle, display: "flex", alignItems: "center", gap: 5 }}><User size={14} /> {accountLabel}</button>
-        </nav>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button onClick={openCart} style={{ position: "relative", background: "rgba(255,255,255,.08)", border: "none", borderRadius: 8, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <ShoppingCart size={18} color="#fff" />
-            {cartCount > 0 && <span style={{ position: "absolute", top: -5, right: -5, background: T.coral, color: "#fff", fontSize: 10.5, fontWeight: 700, width: 18, height: 18, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{cartCount}</span>}
+        {/* Navigation */}
+        <nav
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <button
+            type="button"
+            onClick={goHome}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: dark ? "#fff" : T.ink,
+              cursor: "pointer",
+              padding: "8px 10px",
+              fontSize: 14,
+            }}
+          >
+            Home
           </button>
-          <div style={{ display: "none" }} className="tw-mobile-only">
-            <button onClick={() => setMobileOpen((v) => !v)} style={{ background: "rgba(255,255,255,.08)", border: "none", borderRadius: 8, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <MenuIcon size={18} color="#fff" />
-            </button>
-          </div>
-          <div className="tw-hide-mobile">
-            <Button variant="primary" size="sm" onClick={openOrderType}>Order Now</Button>
-          </div>
-        </div>
+
+          <button
+            type="button"
+            onClick={goMenu}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: dark ? "#fff" : T.ink,
+              cursor: "pointer",
+              padding: "8px 10px",
+              fontSize: 14,
+            }}
+          >
+            Menu
+          </button>
+
+          <button
+            type="button"
+            onClick={openOrderType}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: dark ? "#fff" : T.ink,
+              cursor: "pointer",
+              padding: "8px 10px",
+              fontSize: 14,
+            }}
+          >
+            Order
+          </button>
+
+          <button
+            type="button"
+            onClick={goLogin}
+            style={{
+              border: 0,
+              background: "transparent",
+              color: dark ? "#fff" : T.ink,
+              cursor: "pointer",
+              padding: "8px 10px",
+              fontSize: 14,
+            }}
+          >
+            Login
+          </button>
+
+          {/* Cart */}
+          <button
+            type="button"
+            onClick={openCart}
+            style={{
+              position: "relative",
+              border: `1px solid ${
+                dark ? "rgba(255,255,255,0.35)" : T.line
+              }`,
+              background: dark ? "rgba(255,255,255,0.08)" : T.cream,
+              color: dark ? "#fff" : T.ink,
+              cursor: "pointer",
+              padding: "9px 13px",
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Cart
+
+            {cartCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -7,
+                  right: -7,
+                  minWidth: 20,
+                  height: 20,
+                  padding: "0 5px",
+                  borderRadius: 999,
+                  display: "grid",
+                  placeItems: "center",
+                  background: T.ink,
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </nav>
       </div>
-      {mobileOpen && (
-        <div className="tw-mobile-only" style={{ background: T.inkDeep, padding: "12px 20px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <button onClick={() => { goHome(); setMobileOpen(false); }} style={navLinkStyle}>Home</button>
-          <button onClick={() => { goMenu(); setMobileOpen(false); }} style={navLinkStyle}>Menu</button>
-          <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={navLinkStyle}>Call {RESTAURANT.phone}</a>
-          <button onClick={() => { accountAction(); setMobileOpen(false); }} style={navLinkStyle}>{accountLabel}</button>
-          <Button variant="primary" size="sm" onClick={() => { openOrderType(); setMobileOpen(false); }}>Order Now</Button>
-        </div>
-      )}
     </header>
   );
 }
