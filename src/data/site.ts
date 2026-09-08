@@ -90,7 +90,7 @@ export const RESTAURANT = {
     { d: "Friday – Saturday", h: "09:00 AM – 12:00 PM" },
     { d: "Sunday", h: "09:00 AM – 12:00 PM" },
   ],
-  mapQuery: "Al Lisaily Shabiya, Khalifa Building - الليسيلي Shop3 - Al Marmoum - Dubai",
+  mapQuery: "Bayah Seafood Restaurant, Al Lisaily Shabiya, Khalifa Building - الليسيلي Shop3 - Al Marmoum - Dubai",
   instagram: "https://www.instagram.com/bayah_seafood/",
   facebook: "https://www.facebook.com/BayahSeafoodRestaurant/",
 };

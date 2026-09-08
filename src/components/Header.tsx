@@ -1,4 +1,5 @@
 import { T } from "../data/site";
+import logo from "../assets/logo.png";
 
 type HeaderProps = {
   goHome: () => void;
@@ -51,13 +52,9 @@ export default function Header({
             background: "transparent",
             padding: 0,
             cursor: "pointer",
-            color: dark ? "#fff" : T.ink,
-            fontSize: 20,
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
           }}
         >
-          Bayah Seafood
+          <img src={logo} alt="Bayah Seafood" style={{ height: 40 }} />
         </button>
 
         {/* Navigation */}
