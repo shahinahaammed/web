@@ -25,7 +25,7 @@ export default function HomePage({ startOrder, goMenu, menuItems }: HomePageProp
             </h1>
             <p style={{ fontSize: 17, color: "rgba(255,255,255,.75)", maxWidth: 460, lineHeight: 1.6, marginBottom: 30 }}>{RESTAURANT.tagline}</p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <Button variant="primary" size="lg" onClick={startOrder}>Order Now <ChevronRight size={17} /></Button>
+              <Button variant="primary" size="lg" onClick={startOrder()}>Order Now <ChevronRight size={17} /></Button>
               <Button variant="outlineLight" size="lg" onClick={goMenu}>View Menu</Button>
             </div>
           </div>
