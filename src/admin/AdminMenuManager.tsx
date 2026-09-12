@@ -33,7 +33,7 @@ export default function AdminMenuManager({ menuItems, saveMenu, deleteMenuItem }
   const [filterCat, setFilterCat] = useState("all");
 
   const startAdd = () => { setForm(emptyItemForm()); setEditing(true); };
-  const startEdit = (item: MenuItem) => { setForm({ ...item, price: String(item.price) }); setEditing(true); };
+  const startEdit = (item: MenuItem) => { setForm({ ...item, imageUrl: item.imageUrl ?? "", price: String(item.price) }); setEditing(true); };
   const cancel = () => { setForm(emptyItemForm()); setEditing(false); };
 
   const submit = () => {
