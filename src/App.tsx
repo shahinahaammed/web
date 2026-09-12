@@ -151,7 +151,10 @@ function AppContent() {
 
   // ---------------- Navigation ----------------
   const goHome = () => navigate("/");
-  const goMenu = () => navigate("/menu");
+  // Opening Menu always starts with the order-type selection layer.
+  // After the customer chooses Dine-In, Takeaway, or Home Delivery,
+  // OrderTypePicker navigates to /menu.
+  const goMenu = () => navigate("/order");
   const goCart = () => navigate("/cart");
   const goCheckout = () => navigate("/checkout");
   const goLogin = () => navigate("/customer/login");

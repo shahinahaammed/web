@@ -15,7 +15,7 @@ export default function OrderTypePicker({ onPick, onBack }: OrderTypePickerProps
         <button onClick={onBack} style={{ ...navLinkStyle, color: T.ink, display: "flex", alignItems: "center", gap: 6, marginBottom: 24 }}><ArrowLeft size={15} /> Back</button>
         <StepIndicator step={0} />
         <h1 style={{ fontFamily: "Fraunces, serif", fontSize: "clamp(26px,4vw,36px)", fontWeight: 600, color: T.ink, marginBottom: 10 }}>How would you like to order?</h1>
-        <p style={{ color: T.ink60, marginBottom: 30 }}>Pick one to start browsing today's menu.</p>
+        <p style={{ color: T.ink60, marginBottom: 30 }}>Choose how you want to receive your order, then browse the menu.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }} className="tw-3col">
           <OrderTypeCard icon={<Utensils size={22} color={T.tide} />} title="Dine-In" desc="Table service, order at your seat." onClick={() => onPick("dine-in")} />
           <OrderTypeCard icon={<Package size={22} color={T.tide} />} title="Takeaway" desc="Order ahead and collect." onClick={() => onPick("takeaway")} />
