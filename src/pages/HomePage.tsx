@@ -113,7 +113,7 @@ export default function HomePage({ startOrder, goMenu, menuItems }: HomePageProp
               <p style={{ fontSize: 14, color: T.ink60, lineHeight: 1.5, marginBottom: 18 }}>{RESTAURANT.address}</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <a href={`tel:${RESTAURANT.phone.replace(/\s/g, "")}`} style={{ textDecoration: "none" }}><Button variant="outline" size="sm"><Phone size={14} /> Call</Button></a>
-                <a href={`https://wa.me/${RESTAURANT.whatsapp}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                <a href={`https://wa.me/${RESTAURANT.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
                   <Button variant="ghost" size="sm"><SeaIcon type="whatsapp" size={14} color={T.tide} /> WhatsApp</Button>
                 </a>
               </div>

@@ -9,6 +9,7 @@ const mapMenu = (row: any): MenuItem => ({
   price: Number(row.price),
   popular: !!row.popular,
   available: !!row.available,
+  imageUrl: row.image_url ?? "",
 });
 
 const mapOrder = (row: any): Order => ({
@@ -90,7 +91,7 @@ export async function loadMenu(): Promise<MenuItem[]> {
 }
 
 export async function upsertMenu(items: MenuItem[]) {
-  const payload = items.map((item) => ({ id: item.id, category: item.category, name: item.name, description: item.desc, price: item.price, popular: item.popular, available: item.available }));
+  const payload = items.map((item) => ({ id: item.id, category: item.category, name: item.name, description: item.desc, price: item.price, popular: item.popular, available: item.available, image_url: item.imageUrl ?? null }));
   const { error } = await supabase.from("menu_items").upsert(payload);
   if (error) throw error;
   return loadMenu();
@@ -151,10 +152,15 @@ export async function createOrder(order: Order) {
   };
   const jsonBoolean = (value: unknown) => (Boolean(value) ? "true" : "false");
 
+  const normalizedOrderType: OrderType =
+    order.orderType === "dine-in" || order.orderType === "takeaway" || order.orderType === "delivery"
+      ? order.orderType
+      : (() => { throw new Error(`Invalid order type: ${String(order.orderType)}`); })();
+
   const bodyText = `{
     "order_number": ${jsonString(String(order.orderNumber))},
     "customer_id": ${order.customerId ? jsonString(String(order.customerId)) : "null"},
-    "order_type": ${jsonString(String(order.orderType))},
+    "order_type": ${jsonString(normalizedOrderType)},
     "form": {
       "name": ${jsonString(cleanForm.name)},
       "phone": ${jsonString(cleanForm.phone)},

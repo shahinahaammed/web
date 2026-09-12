@@ -109,7 +109,9 @@ export function buildWhatsAppLink(
     );
   }
 
-  return `https://wa.me/${RESTAURANT.whatsapp}?text=${encodeURIComponent(
+  const whatsappNumber = RESTAURANT.whatsapp.replace(/\D/g, "");
+
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     lines.join("\n")
   )}`;
 }

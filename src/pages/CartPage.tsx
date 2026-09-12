@@ -61,7 +61,7 @@ export default function CartPage({
     <div
       style={{
         background: T.sand,
-        minHeight: "75vh",
+        minHeight: "calc(100vh - 80px)",
         padding: "40px 20px 80px",
       }}
     >

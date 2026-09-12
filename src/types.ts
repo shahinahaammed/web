@@ -3,7 +3,7 @@ export type View = "home" | "login" | "orderType" | "menu" | "cart" | "checkout"
 export type OrderStatus = "New" | "Pending" | "Preparing" | "Ready" | "Completed" | "Cancelled";
 export type IconType = "fish" | "prawn" | "crab" | "lobster" | "squid" | "bowl" | "plate" | "cup" | "dessert" | "whatsapp" | "instagram" | "facebook";
 export interface Category { id: string; label: string; icon: IconType; }
-export interface MenuItem { id: string; category: string; name: string; desc: string; price: number; popular: boolean; available: boolean; }
+export interface MenuItem { id: string; category: string; name: string; desc: string; price: number; popular: boolean; available: boolean; imageUrl?: string; }
 export interface CartItem extends MenuItem { qty: number; }
 export type Cart = Record<string, CartItem>;
 export interface CheckoutForm { name: string; phone: string; tableNumber: string; people: string; pickupTime: string; area: string; building: string; flat: string; address: string; deliveryInstructions: string; instructions: string; }

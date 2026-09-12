@@ -14,10 +14,11 @@ interface ItemForm {
   price: string;
   popular: boolean;
   available: boolean;
+  imageUrl: string;
 }
 
 export function emptyItemForm(): ItemForm {
-  return { id: null, category: CATEGORIES[0].id, name: "", desc: "", price: "", popular: false, available: true };
+  return { id: null, category: CATEGORIES[0].id, name: "", desc: "", price: "", popular: false, available: true, imageUrl: "" };
 }
 
 interface AdminMenuManagerProps {
@@ -78,6 +79,7 @@ export default function AdminMenuManager({ menuItems, saveMenu, deleteMenuItem }
             </Field>
           </div>
           <Field label="Description"><input style={inputStyle} value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} placeholder="Short description" /></Field>
+          <Field label="Menu image URL (optional)"><input style={inputStyle} value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." /></Field>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, alignItems: "end" }} className="tw-3col">
             <Field label="Price (AED)"><input style={inputStyle} type="number" min="0" step="0.5" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0.00" /></Field>
             <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, fontSize: 14, color: T.ink }}>

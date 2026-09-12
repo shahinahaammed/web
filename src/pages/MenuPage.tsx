@@ -17,9 +17,16 @@ interface MenuRowProps {
 function MenuRow({ item, qty, onAdd, onInc, onDec, last }: MenuRowProps) {
   const icon = CATEGORIES.find((c) => c.id === item.category)?.icon || "fish";
   return (
-    <div style={{ display: "flex", gap: 16, padding: "22px 0", borderBottom: last ? "none" : `1px solid ${T.line}`, opacity: item.available ? 1 : 0.5 }}>
-      <div style={{ width: 50, height: 50, borderRadius: 10, background: T.tideLight, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <SeaIcon type={icon} size={24} color={T.tide} />
+    <div className="tw-menu-row" style={{ display: "flex", gap: 16, padding: "22px 0", borderBottom: last ? "none" : `1px solid ${T.line}`, opacity: item.available ? 1 : 0.5 }}>
+      <div className="tw-menu-image" style={{ width: 150, height: 112, borderRadius: 12, background: `linear-gradient(145deg, ${T.tideLight}, #fff8e9)`, border: `1px solid ${T.line}`, flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        ) : (
+          <>
+            <SeaIcon type={icon} size={52} color={T.tide} />
+            <span style={{ position: "absolute", left: 10, bottom: 8, background: "rgba(255,255,255,.88)", borderRadius: 999, padding: "3px 8px", fontSize: 10.5, fontWeight: 700, color: T.ink }}>Bayah Fresh</span>
+          </>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="tw-menu-title-row" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>

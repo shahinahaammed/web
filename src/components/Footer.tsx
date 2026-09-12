@@ -18,7 +18,7 @@ export default function Footer({ goMenu, goHome, goAdmin }: FooterProps) {
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <a href={RESTAURANT.instagram} target="_blank" rel="noreferrer" style={socialIconStyle}><SeaIcon type="instagram" size={16} color="#fff" /></a>
             <a href={RESTAURANT.facebook} target="_blank" rel="noreferrer" style={socialIconStyle}><SeaIcon type="facebook" size={16} color="#fff" /></a>
-            <a href={`https://wa.me/${RESTAURANT.whatsapp}`} target="_blank" rel="noreferrer" style={socialIconStyle}><SeaIcon type="whatsapp" size={16} color="#fff" /></a>
+            <a href={`https://wa.me/${RESTAURANT.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" style={socialIconStyle}><SeaIcon type="whatsapp" size={16} color="#fff" /></a>
           </div>
         </div>
         <div>

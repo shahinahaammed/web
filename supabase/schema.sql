@@ -19,6 +19,7 @@ create table if not exists public.menu_items (
   price numeric(10,2) not null check (price >= 0),
   popular boolean not null default false,
   available boolean not null default true,
+  image_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

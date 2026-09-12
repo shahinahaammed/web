@@ -47,3 +47,12 @@ button, input, select, textarea { max-width: 100%; }
   .tw-cart-line > div:nth-child(3) { margin-left: 62px; }
   .tw-cart-line > div:nth-child(4) { min-width: 66px !important; margin-left: auto; }
 }
+
+
+@media (max-width: 600px) {
+  .tw-menu-row { align-items: flex-start !important; gap: 12px !important; }
+  .tw-menu-image { width: 92px !important; height: 92px !important; }
+  .tw-menu-image svg { width: 42px !important; height: 42px !important; }
+  .tw-menu-row > div:nth-child(2) { min-width: 0 !important; }
+  .tw-admin-detail-row { grid-template-columns: 1fr !important; gap: 2px !important; }
+}
